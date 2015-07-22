@@ -23,6 +23,17 @@ class Light(models.Model):
         # If private is false, everyone has access
         return True
 
+    """
+    State of the lights.
+    """
+    on = models.BooleanField()
+    bri = models.IntegerField()
+    hue = models.IntegerField()
+    sat = models.IntegerField()
+    effect = models.CharField(max_length = 40)
+    name = models.CharField(max_length = 100)
+    
+
 class Zone(models.Model):
     name = models.CharField(max_length = 100)
     lights = models.ManyToManyField('Light')
