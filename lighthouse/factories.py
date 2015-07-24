@@ -8,3 +8,15 @@ def create_light(**kwargs):
 
 def create_user(**kwargs):
     return User()
+
+def create_light_api_post(**kwargs):
+    defaults = {
+        'which' : 0,
+        'on' : True,
+        'hue' : 255,
+        'sat' : 255,
+        'bri' : 255,
+        'transitiontime' : 10
+    }
+    defaults.update(kwargs)
+    return defaults

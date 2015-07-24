@@ -52,14 +52,21 @@ def scene_3(lights):
     return scene_3
 
 results = []
-results.append(dispatch_task_light_forever.delay(scene_1([9, 13, 3, 6])))
-results.append(dispatch_task_light_forever.delay(scene_2([23, 19, 2, 14])))
-results.append(dispatch_task_light_forever.delay(scene_3([11, 18, 7])))
+# results.append(dispatch_task_light_forever.delay(scene_1([9, 13, 3, 6])))
+# results.append(dispatch_task_light_forever.delay(scene_2([23, 19, 2, 14])))
+# results.append(dispatch_task_light_forever.delay(scene_3([11, 18, 7])))
+results.append(dispatch_task_light_forever.delay(scene_1([10, 15])))
+results.append(dispatch_task_light_forever.delay(scene_2([16, 1])))
+results.append(dispatch_task_light_forever.delay(scene_3([8, 17])))
+
 
 print("Press enter to continue...")
 char = raw_input()
 for result in results:
     print("Canceling task %s" % result.task_id)
     revoke(result.task_id, terminate=True)
+
+for light in [10, 15, 16, 1, 8, 17]:
+    dispatch_task_light.delay(light, False, 0, 0, 0, 0)
 
 print("Done.")
