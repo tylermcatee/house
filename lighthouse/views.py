@@ -10,6 +10,8 @@ from rest_framework.parsers import JSONParser
 from serializers import LightSerializer
 # Models
 import models
+# Dispatch
+from dispatch import *
 
 class JSONResponse(HttpResponse):
     """
@@ -45,7 +47,8 @@ class Light(APIView):
             # Check the permissions
             if not light.user_authenticated(user):
                 return JSONResponse({'user' : ['User is not authenticated for light %d' % which]}, status=status.HTTP_400_BAD_REQUEST)
-
-            return JSONResponse({'which' : which})
+            # Dispatch the task
+            Dispatch().dispatch_task_light(**serializer.validated_data)
+            return JSONResponse({})
         return JSONResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 

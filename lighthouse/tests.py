@@ -4,7 +4,8 @@ from rest_framework.authtoken.models import Token
 from rest_framework import status
 from factories import *
 from models import *
-import json
+import json, mock
+from dispatch import Dispatch
 
 class LightTest(TestCase):
 
@@ -111,11 +112,12 @@ class LightAPITest(TestCase):
         # We shouldn't be allowed to see this
         self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
 
-    def test_user_allowed(self):
+    @mock.patch.object(Dispatch, 'dispatch_task_light')
+    def test_user_allowed(self, mock_dispatch):
         self.set_up_light(private=True, users=[self.user])
         post = create_light_api_post()
         response = self.post_with_token(post)
-        # We shouldn't be allowed to see this
+        # We should now be allowed to see this
         self.assertEqual(status.HTTP_200_OK, response.status_code)
-
+        self.assertTrue(mock_dispatch.called)
         
