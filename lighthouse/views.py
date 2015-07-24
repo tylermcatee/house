@@ -41,10 +41,10 @@ class Light(APIView):
             try:
                 light = models.Light.objects.get(which=which)
             except:
-                return JSONResponse({'which' : ['No light for which value %d' % which]})
+                return JSONResponse({'which' : ['No light for which value %d' % which]}, status=status.HTTP_400_BAD_REQUEST)
             # Check the permissions
             if not light.user_authenticated(user):
-                return JSONResponse({'user' : ['User is not authenticated for light %d' % which]})
+                return JSONResponse({'user' : ['User is not authenticated for light %d' % which]}, status=status.HTTP_400_BAD_REQUEST)
 
             return JSONResponse({'which' : which})
         return JSONResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

@@ -98,11 +98,24 @@ class LightAPITest(TestCase):
         # If we pass an out of range value for these we should be receiving a 400 error
         self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
 
+    def test_no_light_error(self):
+        post = create_light_api_post()
+        response = self.post_with_token(post)
+        # There should be no light
+        self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
+
     def test_user_not_allowed_error(self):
         self.set_up_light(private=True)
         post = create_light_api_post()
         response = self.post_with_token(post)
         # We shouldn't be allowed to see this
         self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
+
+    def test_user_allowed(self):
+        self.set_up_light(private=True, users=[self.user])
+        post = create_light_api_post()
+        response = self.post_with_token(post)
+        # We shouldn't be allowed to see this
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
 
         
