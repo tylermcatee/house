@@ -48,7 +48,6 @@ class Dispatch:
         @param bri : How bright the light is
         @param transitiontime: In hundreds of miliseconds (i.e. 10 = 1 second)
         """
-        print("\n\ncalled real one\n")
         resource = {
             'which' : which,
             'data' : {

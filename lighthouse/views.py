@@ -29,6 +29,9 @@ class Light(APIView):
     def post(self, request):
         """
         Sets the light state.
+
+        Requires a valid user auth token to set the state,
+        and the user must be allowed to set the state of that light.
         """
         if not request.user or not request.auth:
             raise Http404
@@ -51,4 +54,6 @@ class Light(APIView):
             Dispatch().dispatch_task_light(**serializer.validated_data)
             return JSONResponse({})
         return JSONResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 
