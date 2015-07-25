@@ -1,7 +1,7 @@
 from models import *
 from django.contrib.auth.models import User
 
-test_which = 11
+test_which = 1
 
 def create_light(**kwargs):
     defaults = {'which' : test_which}

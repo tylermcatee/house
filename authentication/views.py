@@ -6,7 +6,7 @@ from rest_framework.authtoken.models import Token
 from rest_framework.views import APIView
 from rest_framework import status
 # Response
-from django.http import HttpResponse
+from django.http import HttpResponse, Http404
 from rest_framework.renderers import JSONRenderer
 from rest_framework.parsers import JSONParser
 # Serializers
@@ -43,6 +43,10 @@ class LogIn(APIView):
 
 class ChangePassword(APIView):
     def post(self, request, format=None):
+        if not request.user or not request.auth:
+            raise Http404
+        user = request.user
+
         serializer = ChangePasswordSerializer(data=request.data)
         if serializer.is_valid():
             username = serializer.data['username']
@@ -52,7 +56,7 @@ class ChangePassword(APIView):
                 new_password = serializer.data['new_password']
                 user.set_password(new_password)
                 user.save()
-                return JSONResponse(serializer.data, status=status.HTTP_201_CREATED)
+                return JSONResponse(serializer.data, status=status.HTTP_202_ACCEPTED)
             else:
                 error = {
                     "username" : "The username or password is invalid",
@@ -61,3 +65,5 @@ class ChangePassword(APIView):
                 return JSONResponse(error, status=status.HTTP_400_BAD_REQUEST)
         return JSONResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
+
+

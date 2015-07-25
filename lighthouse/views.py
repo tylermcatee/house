@@ -51,7 +51,8 @@ class Light(APIView):
             if not light.user_authenticated(user):
                 return JSONResponse({'user' : ['User is not authenticated for light %d' % which]}, status=status.HTTP_400_BAD_REQUEST)
             # Dispatch the task
-            Dispatch().dispatch_task_light(**serializer.validated_data)
+            dispatch_data = dict(serializer.validated_data)
+            Dispatch().dispatch_task_light(**dispatch_data)
             return JSONResponse({})
         return JSONResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 

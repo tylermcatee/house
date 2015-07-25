@@ -7,7 +7,7 @@ class Dispatch:
         self.BRIDGE_IP = '192.168.1.42'
         self.USERNAME = 'newdeveloper'
 
-    def update(resource, debug=False):
+    def update(self, resource, debug=False):
         """
         @summary: Rename lights, or set a light's state, as determined by the\
                   resource object.
@@ -37,7 +37,7 @@ class Dispatch:
         else:
             return dict(resource=content)
 
-    def dispatch_task_light(which, on, hue, sat, bri, transitiontime):
+    def dispatch_task_light(self, which, on, hue, sat, bri, transitiontime):
         """
         Sets the state of a single light
 
@@ -59,7 +59,7 @@ class Dispatch:
 
         # Don't send all the parameters for the update if we're turning it off
         if not on:
-            update(resource)
+            self.update(resource)
             return
 
         resource['data']['state'] = {
@@ -70,5 +70,5 @@ class Dispatch:
             'transitiontime' : transitiontime
         }
 
-        update(resource)
+        self.update(resource)
         return
