@@ -3,8 +3,15 @@ from django.contrib.auth.models import User
 
 test_which = 1
 
+def create_zone(**kwargs):
+    defaults = {'which' : test_which, 'name' : 'zone'}
+    defaults.update(kwargs)
+    return Zone(**defaults)
+
 def create_light(**kwargs):
-    defaults = {'which' : test_which}
+    zone = create_zone()
+    zone.save()
+    defaults = {'which' : test_which, 'zone' : zone}
     defaults.update(kwargs)
     return Light(**defaults)
 

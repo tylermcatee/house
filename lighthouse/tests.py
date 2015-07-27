@@ -14,12 +14,11 @@ class LightTest(TestCase):
 
     def test_add_user(self):
         user = create_user()
-        light = create_light()
-        # Need to save these before engaging manytomany field
-        user.save()        
+        user.save()
+        light = create_light()      
         light.save()
-        light.users.add(user)
-        self.assertItemsEqual([user], light.users.all())
+        light.zone.users.add(user)
+        self.assertItemsEqual([user], light.zone.users.all())
 
     def test_user_authenticated_not_private(self):
         user = create_user()
@@ -32,7 +31,7 @@ class LightTest(TestCase):
         # Need to save these before engaging manytomany field
         user.save()        
         light.save()
-        light.private = True
+        light.zone.private = True
         self.assertFalse(light.user_authenticated(user))
 
     def test_user_authenticated_private(self):
@@ -41,7 +40,7 @@ class LightTest(TestCase):
         # Need to save these before engaging manytomany field
         user.save()        
         light.save()
-        light.users.add(user)
+        light.zone.users.add(user)
         light.private = True
         self.assertTrue(light.user_authenticated(user))
 
@@ -59,10 +58,11 @@ class LightAPITest(TestCase):
 
     def set_up_light(self, private=False, users=[]):
         l = create_light()
-        l.private = private
+        l.zone.private = private
+        l.zone.save()
         l.save()
         for user in users:
-            l.users.add(user)
+            l.zone.users.add(user)
         l.save()
 
     def test_no_user_raises_404(self):

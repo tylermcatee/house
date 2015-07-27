@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-class LightSerializer(serializers.Serializer):
+class PostLightSerializer(serializers.Serializer):
     which = serializers.IntegerField()
     on = serializers.BooleanField()
     hue = serializers.IntegerField()
