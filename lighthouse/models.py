@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+from dispatch import *
 
 # Create your models here.
 class Light(models.Model):
@@ -19,11 +20,23 @@ class Light(models.Model):
         # If private is false, everyone has access
         return True
 
-    def set_name(self, newname):
-        if self.name != newname:
-            oldname = self.name
-            self.name = newname
-            print("Changed name from %s to %s" % (oldname, newname))
+    def save(self, *args, **kw):
+        if self.pk is not None:
+            orig = Light.objects.get(pk=self.pk)
+            if orig.name != self.name:
+                # We have changed the name of the light,
+                # we need to update the bridge.
+                print("Name changed from %s to %s" % (orig.name, self.name))
+                Dispatch().update({
+                        'which' : self.which,
+                        'data' : {
+                            'attr' : {
+                                'name' : self.name
+                            }
+                        }
+                    })
+        super(Light, self).save(*args, **kw)
+        
 
 def default_zone():
     """

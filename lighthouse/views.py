@@ -28,13 +28,17 @@ def update_light_store(resource):
     the bridge, so that the admin can go ahead and set permissions
     on lights.
     """
-    which = resource['id']
+    which = int(resource['id'])
+    
     try:
         light = models.Light.objects.get(which=which)
     except:
         light = models.Light(which=which, zone=models.default_zone())
+
     name = resource['name']
-    light.name = name
+    if light.name != name:
+        light.name = name
+
     light.save()
 
 class Light(APIView):
