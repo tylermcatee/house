@@ -44,7 +44,7 @@ class LightTest(TestCase):
         light.private = True
         self.assertTrue(light.user_authenticated(user))
 
-class LightAPITest(TestCase):
+class LightAPIPostTest(TestCase):
 
     def post_with_token(self, post):
         c = Client()
@@ -121,3 +121,46 @@ class LightAPITest(TestCase):
         self.assertEqual(status.HTTP_200_OK, response.status_code)
         self.assertTrue(mock_dispatch.called)
         
+
+class LightAPIGetTest(TestCase):
+
+    def get_with_token(self):
+        c = Client()
+        return c.get(self.url, **{'HTTP_AUTHORIZATION' : 'Token %s' % str(self.token)})
+
+    def setUp(self):
+        self.url = '/lighthouse/light'
+        self.user = create_user()
+        self.user.save()
+        self.token = Token.objects.get(user=self.user)
+
+    def test_no_user_raises_404(self):
+        c = Client()
+        response = c.get(self.url)
+        self.assertEqual(status.HTTP_404_NOT_FOUND, response.status_code)
+
+    @mock.patch.object(Dispatch, 'get')
+    def test_light_state_returned(self, mock_get):
+        light = create_light()
+        light.save()
+        mock_get.return_value = create_resource()
+        response = self.get_with_token()
+        light_response = json.loads(response.content)[0]
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        self.assertEqual(light.name, light_response['name'])
+        self.assertEqual(light.which, light_response['id'])
+
+    @mock.patch.object(Dispatch, 'update')
+    @mock.patch.object(Dispatch, 'get')
+    def test_light_object_changed_on_state_read(self, mock_get, mock_update):
+        light = create_light()
+        light.save()
+        new_name = 'newname'
+        new_resource = create_resource()
+        new_resource['resource'][0]['name'] = new_name
+        mock_get.return_value = new_resource
+        response = self.get_with_token()
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        light = Light.objects.get(which=light.which)
+        self.assertEqual(light.name, new_name)
+

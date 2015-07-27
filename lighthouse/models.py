@@ -26,7 +26,6 @@ class Light(models.Model):
             if orig.name != self.name:
                 # We have changed the name of the light,
                 # we need to update the bridge.
-                print("Name changed from %s to %s" % (orig.name, self.name))
                 Dispatch().update({
                         'which' : self.which,
                         'data' : {

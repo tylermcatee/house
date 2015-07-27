@@ -2,6 +2,7 @@ from models import *
 from django.contrib.auth.models import User
 
 test_which = 1
+test_name = 'test'
 
 def create_zone(**kwargs):
     defaults = {'name' : 'zone'}
@@ -11,7 +12,7 @@ def create_zone(**kwargs):
 def create_light(**kwargs):
     zone = create_zone()
     zone.save()
-    defaults = {'which' : test_which, 'zone' : zone}
+    defaults = {'which' : test_which, 'zone' : zone, 'name' : test_name}
     defaults.update(kwargs)
     return Light(**defaults)
 
@@ -29,3 +30,15 @@ def create_light_api_post(**kwargs):
     }
     defaults.update(kwargs)
     return defaults
+
+def create_resource(**kwargs):
+    resource = {
+        'resource' : [
+            {
+                'id' : test_which,
+                'name' : test_name,
+            },
+        ]
+    }
+    resource.update(**kwargs)
+    return resource

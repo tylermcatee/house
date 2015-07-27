@@ -103,5 +103,3 @@ class Light(APIView):
             return JSONResponse({})
         return JSONResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
-
