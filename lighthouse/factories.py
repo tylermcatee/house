@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 test_which = 1
 
 def create_zone(**kwargs):
-    defaults = {'which' : test_which, 'name' : 'zone'}
+    defaults = {'name' : 'zone'}
     defaults.update(kwargs)
     return Zone(**defaults)
 

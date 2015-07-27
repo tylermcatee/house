@@ -32,7 +32,7 @@ def update_light_store(resource):
     try:
         light = models.Light.objects.get(which=which)
     except:
-        light = models.Light(which=which)
+        light = models.Light(which=which, zone=models.default_zone())
     name = resource['name']
     light.name = name
     light.save()
