@@ -53,14 +53,24 @@ class Light(APIView):
 
         Requires a valid user auth token to get the state of the lights.
         """
-        # if not request.user or not request.auth:
-        #     raise Http404
-        # user = request.user
+        if not request.user or not request.auth:
+            raise Http404
+        user = request.user
+
         light_state = Dispatch().get({'which' : 'all'})
         resources = light_state['resource']
         for resource in resources:
             update_light_store(resource)
-        return JSONResponse(resources)
+
+        # Now we only want to return the lights that this user has permission to see.
+        resources_allowed = []
+        for resource in resources:
+            which = int(resource['id'])
+            light = models.Light.objects.get(which=which)
+            if light.user_authenticated(user):
+                resources_allowed.append(resource)
+
+        return JSONResponse(resources_allowed)
 
 
     def post(self, request):
