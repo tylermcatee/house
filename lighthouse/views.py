@@ -41,7 +41,7 @@ def update_light_store(resource):
 
     light.save()
 
-class Light(APIView):
+class Lights(APIView):
     """
     All things light.
     """

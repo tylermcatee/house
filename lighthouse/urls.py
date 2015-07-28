@@ -2,5 +2,5 @@ from django.conf.urls import patterns, url
 from lighthouse import views
 
 urlpatterns = patterns('',
-  url(r'^light/?$', views.Light.as_view()),
+  url(r'^lights/?$', views.Lights.as_view()),
 )

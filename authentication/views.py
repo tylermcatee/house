@@ -56,7 +56,7 @@ class ChangePassword(APIView):
                 new_password = serializer.data['new_password']
                 user.set_password(new_password)
                 user.save()
-                return JSONResponse(serializer.data, status=status.HTTP_202_ACCEPTED)
+                return JSONResponse({}, status=status.HTTP_202_ACCEPTED)
             else:
                 error = {
                     "username" : "The username or password is invalid",

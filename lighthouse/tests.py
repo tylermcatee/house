@@ -51,7 +51,7 @@ class LightAPIPostTest(TestCase):
         return c.post(self.url, content_type = 'application/json', data = json.dumps(post), **{'HTTP_AUTHORIZATION' : 'Token %s' % str(self.token)})
 
     def setUp(self):
-        self.url = '/lighthouse/light'
+        self.url = '/lighthouse/lights'
         self.user = create_user()
         self.user.save()
         self.token = Token.objects.get(user=self.user)
@@ -129,7 +129,7 @@ class LightAPIGetTest(TestCase):
         return c.get(self.url, **{'HTTP_AUTHORIZATION' : 'Token %s' % str(self.token)})
 
     def setUp(self):
-        self.url = '/lighthouse/light'
+        self.url = '/lighthouse/lights'
         self.user = create_user()
         self.user.save()
         self.token = Token.objects.get(user=self.user)
