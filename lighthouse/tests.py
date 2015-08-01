@@ -7,7 +7,7 @@ from models import *
 import json, mock
 from dispatch import Dispatch
 
-class LightTest(TestCase):
+class LightModelTest(TestCase):
 
     def test_create_light(self):
         light = create_light()
@@ -44,7 +44,13 @@ class LightTest(TestCase):
         light.private = True
         self.assertTrue(light.user_authenticated(user))
 
-class LightAPIPostTest(TestCase):
+    def test_as_json(self):
+        light_json = {'which' : 0, 'name' : 'test'}
+        light = create_light(**light_json)
+        light.save()
+        self.assertEqual(light_json, light.as_json())
+
+class LightPOSTTest(TestCase):
 
     def post_with_token(self, post):
         c = Client()
@@ -122,7 +128,7 @@ class LightAPIPostTest(TestCase):
         self.assertTrue(mock_dispatch.called)
         
 
-class LightAPIGetTest(TestCase):
+class LightGETTest(TestCase):
 
     def get_with_token(self):
         c = Client()
@@ -164,3 +170,53 @@ class LightAPIGetTest(TestCase):
         light = Light.objects.get(which=light.which)
         self.assertEqual(light.name, new_name)
 
+class ZoneModelTest(TestCase):
+
+    def test_create_zone(self):
+        self.assertEqual(0, len(Zone.objects.all()))
+        zone = create_zone()
+        zone.save()
+        self.assertEqual(1, len(Zone.objects.all()))
+        new_zone = Zone.objects.all()[0]
+        self.assertEqual(zone, new_zone)
+
+    def test_default_zone_function(self):
+        self.assertEqual(0, len(Zone.objects.all()))
+        zone = default_zone()
+        self.assertEqual(1, len(Zone.objects.all()))
+        new_zone = Zone.objects.all()[0]
+        self.assertEqual(zone, new_zone)
+
+    def test_as_json_no_lights(self):
+        zone_json = {
+            'name' : 'test',
+        }
+        zone = create_zone(**zone_json)
+        zone.save()
+        # Make it look like what we're expecting for as_json
+        zone_json['lights'] = []
+        new_zone_json = zone.as_json()
+        self.assertEqual(zone_json, new_zone_json)
+
+    def test_as_json_lights(self):
+        zone_json = {
+            'name' : 'test',
+        }
+        zone = create_zone(**zone_json)
+        zone.save()
+        light_json = {'which' : 0, 'name' : 'test'}
+        light = create_light(**light_json)
+        light.zone = zone
+        light.save()
+        # Make it look like what we're expecting for as_json
+        zone_json['lights'] = [light_json]
+        new_zone_json = zone.as_json()
+        self.assertEqual(zone_json, new_zone_json)
+
+    def test_add_users(self):
+        zone = create_zone()
+        zone.save()
+        user = create_user()
+        user.save()
+        zone.users.add(user)
+        self.assertItemsEqual(zone.users.all(), [user])
