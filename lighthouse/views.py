@@ -103,3 +103,22 @@ class Lights(APIView):
             return JSONResponse({})
         return JSONResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+class Zones(APIView):
+    """
+    Permission-authenticated zones or groups of lights.
+    """
+    def get(self, request):
+        """
+        Returns zones and the lights that correspond to them.
+        """
+        if not request.user or not request.auth:
+            raise Http404
+        user = request.user
+
+        zones = models.Zone.objects.all()
+        zone_json = []
+        for zone in zones:
+            zone_json.append(zone.as_json())
+            
+        return JSONResponse(zone_json, status=status.HTTP_200_OK)
+

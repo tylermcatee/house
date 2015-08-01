@@ -35,6 +35,12 @@ class Light(models.Model):
                         }
                     })
         super(Light, self).save(*args, **kw)
+
+    def as_json(self):
+        """
+        Returns the light description as json
+        """
+        return {'which' : self.which, 'name' : self.name}
         
 
 def default_zone():
@@ -68,3 +74,12 @@ class Zone(models.Model):
     """
     private = models.BooleanField(default=False)
     users = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True)
+
+    def as_json(self):
+        """
+        Returns the zone as JSON including all of its lights.
+        """
+        base_json = {'name' : self.name, 'lights' : []}
+        for light in Light.objects.filter(zone=self):
+            base_json['lights'].append(light.as_json())
+        return base_json
