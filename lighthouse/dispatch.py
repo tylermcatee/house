@@ -88,6 +88,26 @@ class Dispatch:
         else:
             return dict(resource=content)
 
+    def dispatch_task_alert(self, which):
+        """
+        Sets a light to blink.
+
+        @param which : Which light we are setting, same as the bridge ID.
+        @discussion Also will turn the light on if it is off.
+        """
+        resource = {
+            'which' : which,
+            'data' : {
+                'state' : {
+                    'on' : True,
+                    'alert' : 'select'
+                }
+            }
+        }
+
+        self.update(resource)
+        return
+
     def dispatch_task_light(self, which, on, hue, sat, bri, transitiontime):
         """
         Sets the state of a single light

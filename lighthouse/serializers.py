@@ -26,3 +26,6 @@ class PostLightSerializer(serializers.Serializer):
     def validate_transitiontime(self, value):
         if value < 0:
             raise serializers.ValidationError("Transitiontime must be greater than 0")
+
+class PostAlertSerializer(serializers.Serializer):
+    which = serializers.IntegerField()

@@ -8,6 +8,7 @@ from rest_framework.renderers import JSONRenderer
 from rest_framework.parsers import JSONParser
 # Serializers
 from serializers import PostLightSerializer
+from serializers import PostAlertSerializer
 # Models
 import models
 # Dispatch
@@ -100,8 +101,44 @@ class Lights(APIView):
             # Dispatch the task
             dispatch_data = dict(serializer.validated_data)
             Dispatch().dispatch_task_light(**dispatch_data)
-            return JSONResponse({})
+            return JSONResponse({}, status=status.HTTP_200_OK)
         return JSONResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class Alert(APIView):
+    """
+    Toggles a blink mode on a light.
+    """
+    def post(self, request):
+        """
+        Sets the light to blink once.
+
+        Requires a valid user auth token to set the state,
+        and the user must be allowed to set the state of that light.
+        """
+        if not request.user or not request.auth:
+            raise Http404
+        user = request.user
+
+        # Serialize the data
+        serializer = PostAlertSerializer(data=request.data)
+        # Check if it is valid
+        if serializer.is_valid():
+            # Get the light
+            which = serializer.data['which']
+            try:
+                light = models.Light.objects.get(which=which)
+            except:
+                return JSONResponse({'which' : ['No light for which value %d' % which]}, status=status.HTTP_400_BAD_REQUEST)
+            # Check the permissions
+            if not light.user_authenticated(user):
+                return JSONResponse({'user' : ['User is not authenticated for light %d' % which]}, status=status.HTTP_400_BAD_REQUEST)
+            # Dispatch the task
+            dispatch_data = dict(serializer.validated_data)
+            Dispatch().dispatch_task_alert(**dispatch_data)
+            return JSONResponse({}, status=status.HTTP_200_OK)
+        return JSONResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 
 class Zones(APIView):
     """

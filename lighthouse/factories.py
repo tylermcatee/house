@@ -36,6 +36,13 @@ def create_light_api_post(**kwargs):
     defaults.update(kwargs)
     return defaults
 
+def create_alert_api_post(**kwargs):
+    defaults = {
+        'which' : test_which,
+    }
+    defaults.update(kwargs)
+    return defaults
+
 def create_resource(**kwargs):
     resource = {
         'resource' : [
