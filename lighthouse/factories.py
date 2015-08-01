@@ -22,7 +22,7 @@ def create_light_no_zone(**kwargs):
     return Light(**defaults)
 
 def create_user(**kwargs):
-    return User()
+    return User(username='test', password='test')
 
 def create_light_api_post(**kwargs):
     defaults = {

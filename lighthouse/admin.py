@@ -11,6 +11,8 @@ class ZoneAdmin(admin.ModelAdmin):
 admin.site.register(Zone, ZoneAdmin)
 
 class LightAdmin(admin.ModelAdmin):
+    class Media:
+        js = ['lightadmin.js', ]
     list_display = ('name', 'which', 'zone')
 
     def formfield_for_foreignkey(self, db_field, request=None, **kwargs):

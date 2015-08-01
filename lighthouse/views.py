@@ -1,3 +1,7 @@
+# Django Admin
+from django.contrib.admin.views.decorators import staff_member_required
+# Django
+from django.views.decorators.csrf import csrf_exempt
 # Django Rest Framework
 from rest_framework.authtoken.models import Token
 from rest_framework.views import APIView
@@ -13,6 +17,8 @@ from serializers import PostAlertSerializer
 import models
 # Dispatch
 from dispatch import *
+# Other
+import json
 
 class JSONResponse(HttpResponse):
     """
@@ -105,9 +111,7 @@ class Lights(APIView):
         return JSONResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class Alert(APIView):
-    """
-    Toggles a blink mode on a light.
-    """
+
     def post(self, request):
         """
         Sets the light to blink once.
@@ -120,7 +124,8 @@ class Alert(APIView):
         user = request.user
 
         # Serialize the data
-        serializer = PostAlertSerializer(data=request.data)
+        data = json.loads(request.body)
+        serializer = PostAlertSerializer(data=data)
         # Check if it is valid
         if serializer.is_valid():
             # Get the light

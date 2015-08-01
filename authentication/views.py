@@ -1,6 +1,7 @@
 # Django auth
 from django.contrib.auth.models import *
 from django.contrib.auth import authenticate
+from django.contrib.admin.views.decorators import staff_member_required
 # Django Rest Framework
 from rest_framework.authtoken.models import Token
 from rest_framework.views import APIView
@@ -21,6 +22,17 @@ class JSONResponse(HttpResponse):
         content = JSONRenderer().render(data)
         kwargs['content_type'] = 'application/json'
         super(JSONResponse, self).__init__(content, **kwargs)
+
+@staff_member_required
+def staff_member_get_token(request):
+    if request.user:
+        try:
+            token = Token.objects.get(user=request.user)
+            return JSONResponse({"token" : str(token)}, status=status.HTTP_200_OK)
+        except:
+            return JSONResponse({"user" : "No token for user"}, status=status.HTTP_400_BAD_REQUEST)
+    else:
+        raise Http404
 
 class LogIn(APIView):
     def post(self, request, format=None):
