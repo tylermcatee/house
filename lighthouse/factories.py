@@ -16,6 +16,11 @@ def create_light(**kwargs):
     defaults.update(kwargs)
     return Light(**defaults)
 
+def create_light_no_zone(**kwargs):
+    defaults = {'which' : test_which, 'name' : test_name}
+    defaults.update(kwargs)
+    return Light(**defaults)
+
 def create_user(**kwargs):
     return User()
 

@@ -205,7 +205,7 @@ class ZoneModelTest(TestCase):
         zone = create_zone(**zone_json)
         zone.save()
         light_json = {'which' : 0, 'name' : 'test'}
-        light = create_light(**light_json)
+        light = create_light_no_zone(**light_json)
         light.zone = zone
         light.save()
         # Make it look like what we're expecting for as_json
@@ -220,3 +220,39 @@ class ZoneModelTest(TestCase):
         user.save()
         zone.users.add(user)
         self.assertItemsEqual(zone.users.all(), [user])
+
+class ZoneGETTest(TestCase):
+
+    def get_with_token(self):
+        c = Client()
+        return c.get(self.url, **{'HTTP_AUTHORIZATION' : 'Token %s' % str(self.token)})
+
+    def setUp(self):
+        self.url = '/lighthouse/zones'
+        self.user = create_user()
+        self.user.save()
+        self.token = Token.objects.get(user=self.user)
+
+    def test_no_user_raises_404(self):
+        c = Client()
+        response = c.get(self.url)
+        self.assertEqual(status.HTTP_404_NOT_FOUND, response.status_code)
+
+    def test_zone_info_returned(self):
+        zone_json = {
+            'name' : 'test',
+        }
+        zone = create_zone(**zone_json)
+        zone.save()
+        light_json = {'which' : 0, 'name' : 'test'}
+        light = create_light_no_zone(**light_json)
+        light.zone = zone
+        light.save()
+        # Make it look like what we're expecting for as_json
+        zone_json['lights'] = [light_json]
+        response = self.get_with_token()
+        response_json = json.loads(response.content)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        self.assertItemsEqual([zone_json], response_json)
+
+    
