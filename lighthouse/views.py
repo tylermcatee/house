@@ -45,6 +45,29 @@ def update_light_store(resource):
     name = resource['name']
     if light.name != name:
         light.name = name
+    state = resource['state']
+    on = state['on']
+    if light.on != on:
+        light.on = on
+    bri = state['bri']
+    if light.bri != bri:
+        light.bri = bri
+    hue = state['hue']
+    if light.hue != hue:
+        light.hue = hue
+    sat = state['sat']
+    if light.sat != sat:
+        light.sat = sat
+    colorloop = state['effect']
+    if colorloop == 'colorloop':
+        colorloop = True
+    else:
+        colorloop = False
+    if light.colorloop != colorloop:
+        light.colorloop = colorloop
+    reachable = state['reachable']
+    if light.reachable != reachable:
+        light.reachable = reachable
 
     light.save()
 

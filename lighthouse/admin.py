@@ -13,7 +13,7 @@ admin.site.register(Zone, ZoneAdmin)
 class LightAdmin(admin.ModelAdmin):
     class Media:
         js = ['lightadmin.js', ]
-    list_display = ('name', 'which', 'zone')
+    list_display = ('name', 'which', 'zone', 'reachable', 'on', 'bri', 'hue', 'sat', 'colorloop')
 
     def formfield_for_foreignkey(self, db_field, request=None, **kwargs):
         if db_field.name == 'zone':

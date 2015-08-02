@@ -14,6 +14,14 @@ class Light(models.Model):
     # The zone declares which part of the house the light is in
     zone = models.ForeignKey('Zone')
 
+    # State variables
+    on = models.BooleanField(default=False)
+    bri = models.IntegerField()
+    hue = models.IntegerField()
+    sat = models.IntegerField()
+    colorloop = models.BooleanField(default=False)
+    reachable = models.BooleanField(default=False)
+
     def user_authenticated(self, user):
         if self.zone.private:
             return user in self.zone.users.all()
