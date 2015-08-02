@@ -83,3 +83,17 @@ class Zone(models.Model):
         for light in Light.objects.filter(zone=self):
             base_json['lights'].append(light.as_json())
         return base_json
+
+class Scene(models.Model):
+    class Meta:
+        ordering = ['name',]
+    def __unicode__(self):
+        return self.name
+    """
+    A scene represents a setting on a zone of lights.
+
+    Scene may optionally affect each light in the zone.
+    """
+    zone = models.ForeignKey('Zone')
+    name = models.CharField(max_length=100, unique=True)
+    
