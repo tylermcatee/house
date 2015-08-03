@@ -25,6 +25,10 @@ DEBUG = True
 
 TEMPLATE_DEBUG = True
 
+TEMPLATE_LOADERS = (
+    ('django.template.loaders.eggs.Loader',),
+)
+
 TEMPLATE_DIRS = (
     PROJECT_PATH + '/templates/',
 )
@@ -42,6 +46,7 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework.authtoken',
+    'massadmin',
     'authentication',
     'lighthouse',
 )

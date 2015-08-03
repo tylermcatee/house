@@ -16,6 +16,7 @@ admin.autodiscover()
 
 urlpatterns = patterns('',
     url(r'^admin/', include(admin.site.urls)),
+    url(r'^admin/', include('massadmin.urls')),
     url(r'^authentication/', include('authentication.urls')),
     url(r'^lighthouse/', include('lighthouse.urls')),
 ) + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)  + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
