@@ -28,12 +28,23 @@ class Light(models.Model):
         # If private is false, everyone has access
         return True
 
+    def check_change_in_sate(self, orig, state):
+        if getattr(self, state) != getattr(orig, state):
+            Dispatch().update({
+                    'which' : self.which,
+                    'data' : {
+                        'state' : {
+                            state : getattr(self, state)
+                        }
+                    }
+                })
+
     def save(self, *args, **kw):
         if self.pk is not None:
             orig = Light.objects.get(pk=self.pk)
+
+            # Name
             if orig.name != self.name:
-                # We have changed the name of the light,
-                # we need to update the bridge.
                 Dispatch().update({
                         'which' : self.which,
                         'data' : {
@@ -42,6 +53,29 @@ class Light(models.Model):
                             }
                         }
                     })
+
+            # Check changes in state
+            self.check_change_in_sate(orig, 'on')
+            self.check_change_in_sate(orig, 'bri')
+            self.check_change_in_sate(orig, 'hue')
+            self.check_change_in_sate(orig, 'sat')
+
+            # Colorloop
+            if orig.colorloop != self.colorloop:
+                if self.colorloop:
+                    colorloop_str = 'colorloop'
+                else:
+                    colorloop_str = 'none'
+
+                Dispatch().update({
+                        'which' : self.which,
+                        'data' : {
+                            'state' : {
+                                'effect' : colorloop_str
+                            }
+                        }
+                    })
+
         super(Light, self).save(*args, **kw)
 
     def as_json(self):

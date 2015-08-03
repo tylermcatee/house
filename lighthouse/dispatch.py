@@ -63,7 +63,7 @@ class Dispatch:
         @summary: Rename lights, or set a light's state, as determined by the\
                   resource object.
         """
-
+        print("updating light.")
         request = Request()
         if (resource['data'].has_key('attr')):
             service = 'lights/{id}'.format(id=resource['which'])
