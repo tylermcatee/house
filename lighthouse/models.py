@@ -1,6 +1,7 @@
 from django.db import models
 from django.conf import settings
 from dispatch import *
+import random
 
 # Create your models here.
 class Light(models.Model):
@@ -83,6 +84,21 @@ class Light(models.Model):
         Returns the light description as json
         """
         return {'which' : self.which, 'name' : self.name}
+
+    def random(self, hue = True, sat = False, bri = False):
+        """
+        Sets the light to random values for hue, sat, and bri.
+        """
+        if not self.hue and not self.sat and not self.bri:
+            return # Do nothing
+        if hue:
+            self.hue = random.randint(0, 65280)
+        if sat:
+            self.sat = random.randint(0, 255)
+        if bri:
+            self.bri = random.randint(0, 255)
+        self.save()
+
         
 
 def default_zone():

@@ -10,10 +10,15 @@ class ZoneAdmin(admin.ModelAdmin):
     list_display = ('name',)
 admin.site.register(Zone, ZoneAdmin)
 
+def randomize_lights(modeladmin, request, queryset):
+    for light in queryset:
+        light.random()
+
 class LightAdmin(admin.ModelAdmin):
     class Media:
         js = ['lightadmin.js', ]
     list_display = ('name', 'which', 'zone', 'reachable', 'on', 'bri', 'hue', 'sat', 'colorloop')
+    actions = [randomize_lights]
 
     def formfield_for_foreignkey(self, db_field, request=None, **kwargs):
         if db_field.name == 'zone':
