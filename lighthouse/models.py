@@ -55,27 +55,32 @@ class Light(models.Model):
                         }
                     })
 
-            # Check changes in state
-            self.check_change_in_sate(orig, 'on')
-            self.check_change_in_sate(orig, 'bri')
-            self.check_change_in_sate(orig, 'hue')
-            self.check_change_in_sate(orig, 'sat')
+            # State
+            resource = {
+                'which' : self.which,
+                'data' : {
+                    'state' : {}
+                }
+            }
 
-            # Colorloop
-            if orig.colorloop != self.colorloop:
+            if self.on != orig.on:
+                resource['data']['state']['on'] = self.on
+            if self.bri != orig.bri:
+                resource['data']['state']['bri'] = self.bri
+            if self.hue != orig.hue:
+                resource['data']['state']['hue'] = self.hue
+            if self.sat != orig.sat:
+                resource['data']['state']['sat'] = self.sat
+            if self.colorloop != orig.colorloop:
                 if self.colorloop:
                     colorloop_str = 'colorloop'
                 else:
                     colorloop_str = 'none'
+                resource['data']['state']['effect'] = colorloop_str
 
-                Dispatch().update({
-                        'which' : self.which,
-                        'data' : {
-                            'state' : {
-                                'effect' : colorloop_str
-                            }
-                        }
-                    })
+            # If we have resource to update, dispatch it
+            if len(resource['data']['state'].keys()) > 0:
+                Dispatch().update(resource)
 
         super(Light, self).save(*args, **kw)
 
