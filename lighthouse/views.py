@@ -15,8 +15,11 @@ from serializers import PostLightSerializer
 from serializers import PostAlertSerializer
 # Models
 import models
+# Synchronization
+from synchronization import *
 # Dispatch
 from dispatch import *
+from dispatch_types import *
 # Other
 import json
 
@@ -28,48 +31,6 @@ class JSONResponse(HttpResponse):
         content = JSONRenderer().render(data)
         kwargs['content_type'] = 'application/json'
         super(JSONResponse, self).__init__(content, **kwargs)
-
-def update_light_store(resource):
-    """
-    Updates our backing store with the light information from
-    the bridge, so that the admin can go ahead and set permissions
-    on lights.
-    """
-    which = int(resource['id'])
-    
-    try:
-        light = models.Light.objects.get(which=which)
-    except:
-        light = models.Light(which=which, zone=models.default_zone())
-
-    name = resource['name']
-    if light.name != name:
-        light.name = name
-    state = resource['state']
-    on = state['on']
-    if light.on != on:
-        light.on = on
-    bri = state['bri']
-    if light.bri != bri:
-        light.bri = bri
-    hue = state['hue']
-    if light.hue != hue:
-        light.hue = hue
-    sat = state['sat']
-    if light.sat != sat:
-        light.sat = sat
-    colorloop = state['effect']
-    if colorloop == 'colorloop':
-        colorloop = True
-    else:
-        colorloop = False
-    if light.colorloop != colorloop:
-        light.colorloop = colorloop
-    reachable = state['reachable']
-    if light.reachable != reachable:
-        light.reachable = reachable
-
-    light.save()
 
 class Lights(APIView):
     """
@@ -87,20 +48,11 @@ class Lights(APIView):
             raise Http404
         user = request.user
 
-        light_state = Dispatch().get({'which' : 'all'})
-        resources = light_state['resource']
-        for resource in resources:
-            update_light_store(resource)
+        # Synchronize all hue bulbs in the system
+        synchronize_hue()
 
-        # Now we only want to return the lights that this user has permission to see.
-        resources_allowed = []
-        for resource in resources:
-            which = int(resource['id'])
-            light = models.Light.objects.get(which=which)
-            if light.user_authenticated(user):
-                resources_allowed.append(resource)
-
-        return JSONResponse(resources_allowed)
+        # Now return all the light states
+        return JSONResponse([light.as_json(user) for light in models.Light.objects.all()])
 
 
     def post(self, request):

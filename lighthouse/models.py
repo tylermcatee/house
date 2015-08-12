@@ -2,6 +2,7 @@ from django.db import models
 from django.conf import settings
 from dispatch import *
 import random
+from dispatch_types import *
 
 # Create your models here.
 class Light(models.Model):
@@ -15,30 +16,25 @@ class Light(models.Model):
     # The zone declares which part of the house the light is in
     zone = models.ForeignKey('Zone')
 
+    # Identifies which dispatch object to use when changing state
+    dispatch_type = models.IntegerField()
+
     # State variables
     on = models.BooleanField(default=False)
-    bri = models.IntegerField()
-    hue = models.IntegerField()
-    sat = models.IntegerField()
+    bri = models.IntegerField(default=0)
+    hue = models.IntegerField(default=0)
+    sat = models.IntegerField(default=0)
     colorloop = models.BooleanField(default=False)
     reachable = models.BooleanField(default=False)
 
     def user_authenticated(self, user):
         if self.zone.private:
-            return user in self.zone.users.all()
+            if user:
+                return user in self.zone.users.all()
+            else:
+                return False
         # If private is false, everyone has access
         return True
-
-    def check_change_in_sate(self, orig, state):
-        if getattr(self, state) != getattr(orig, state):
-            Dispatch().update({
-                    'which' : self.which,
-                    'data' : {
-                        'state' : {
-                            state : getattr(self, state)
-                        }
-                    }
-                })
 
     def save(self, *args, **kw):
         if self.pk is not None:
@@ -84,11 +80,24 @@ class Light(models.Model):
 
         super(Light, self).save(*args, **kw)
 
-    def as_json(self):
+    def as_json(self, user=None):
         """
         Returns the light description as json
+        Also returns whether the user is authenticated
         """
-        return {'which' : self.which, 'name' : self.name}
+        return {
+            'which' : self.which, 
+            'name' : self.name,
+            'zone' : self.zone.name,
+            'dispatch_type' : self.dispatch_type,
+            'on' : self.on,
+            'bri' : self.bri,
+            'hue' : self.hue,
+            'sat' : self.sat,
+            'colorloop' : self.colorloop,
+            'reachable' : self.reachable,
+            'authenticated' : self.user_authenticated(user)
+        }
 
     def random(self, hue = True, sat = False, bri = False):
         """
