@@ -17,7 +17,7 @@ def randomize_lights(modeladmin, request, queryset):
 class LightAdmin(admin.ModelAdmin):
     class Media:
         js = ['lightadmin.js', ]
-    list_display = ('name', 'which', 'zone', 'reachable', 'on', 'bri', 'hue', 'sat', 'colorloop')
+    list_display = ('name', 'dispatch_type', 'which', 'zone', 'reachable', 'on', 'bri', 'hue', 'sat', 'colorloop')
     actions = [randomize_lights]
 
     def formfield_for_foreignkey(self, db_field, request=None, **kwargs):
@@ -27,3 +27,8 @@ class LightAdmin(admin.ModelAdmin):
         return super(LightAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
         
 admin.site.register(Light, LightAdmin)
+
+class TaskAdmin(admin.ModelAdmin):
+    list_display = ('task_type', 'user', 'created', 'executed')
+
+admin.site.register(Task, TaskAdmin)

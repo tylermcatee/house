@@ -2,6 +2,8 @@ import time, random
 from http import *
 from dispatch_types import *
 
+PHILLIPS_HUE_MAX_HUE = 65280
+
 class DispatchHue:
 
     def __init__(self, dispatch_type=dispatch_type_hue):

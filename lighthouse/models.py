@@ -5,7 +5,7 @@ import random
 from dispatch_types import *
 from task_types import *
 from django.utils import timezone
-import json
+import json, time
 
 class Light(models.Model):
     """
@@ -148,6 +148,12 @@ class TaskInstructionsSingle(TaskInstructions):
     light = models.ForeignKey('Light')
     instructions = models.CharField(max_length=2000)
 
+    def as_json(self):
+        return {
+            'light' : self.light.as_json(),
+            'instructions' : json.loads(self.instructions)
+        }
+
 class Task(models.Model):
     """
     A Task represents a change on the database, or start of a running thread.
@@ -180,6 +186,22 @@ class Task(models.Model):
         # Update the executed to be now
         self.executed = timezone.now()
         self.save()
+
+    def as_json(self):
+        """
+        Returns the JSON version of the task.
+        """
+        json = {
+            'task_type' : self.task_type,
+            'user' : self.user.username,
+            'instructions' : self.instructions.as_json(),
+        }
+        created = int(time.mktime(self.created.timetuple())*1000)
+        json['created'] = created
+        if self.executed:
+            executed = int(time.mktime(self.executed.timetuple())*1000)
+            json['executed'] = executed
+        return json
 
 def default_zone():
     """

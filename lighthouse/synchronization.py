@@ -1,5 +1,41 @@
 import models
 from dispatch import *
+from dispatch_hue import *
+
+def copy_single_task_data(data):
+    """
+    A convenience method for taking single task data
+    and returning an appropriate array.
+    """
+    copied_data = {}
+
+    if 'name' in data:
+        copied_data['name'] = data['name']
+    if 'on' in data:
+        on = data['on']
+        if type(on) is bool:
+            copied_data['on'] = on
+    if 'bri' in data:
+        bri = data['bri']
+        if type(bri) is int:
+            if bri >= 0 and bri <= 255:
+                copied_data['bri'] = bri
+    if 'hue' in data:
+        hue = data['hue']
+        if type(hue) is int:
+            if hue >= 0 and hue <= PHILLIPS_HUE_MAX_HUE:
+                copied_data['hue'] = hue
+    if 'sat' in data:
+        sat = data['sat']
+        if type(sat) is int:
+            if sat >= 0 and sat <= 255:
+                copied_data['sat'] = sat
+    if 'colorloop' in data:
+        colorloop = data['colorloop']
+        if type(colorloop) is bool:
+            copied_data['colorloop'] = colorloop
+
+    return copied_data
 
 def synchronize_hue():
     """

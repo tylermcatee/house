@@ -12,6 +12,7 @@ from rest_framework.renderers import JSONRenderer
 from rest_framework.parsers import JSONParser
 # Serializers
 from serializers import PostAlertSerializer
+from serializers import TaskSingleSerializer
 # Models
 import models
 # Synchronization
@@ -19,6 +20,8 @@ from synchronization import *
 # Dispatch
 from dispatch import *
 from dispatch_types import *
+# Task
+from task_types import *
 # Other
 import json
 
@@ -84,6 +87,41 @@ class Alert(APIView):
             light.alert()
             return JSONResponse({}, status=status.HTTP_200_OK)
         return JSONResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class TaskSingle(APIView):
+
+    def post(self, request):
+        """
+        Posts a change to a single light.
+        """
+        if not request.user or not request.auth:
+            raise Http404
+        user = request.user
+
+        # Serialize the data
+        data = json.loads(request.body)
+        serializer = TaskSingleSerializer(data=data)
+        # Check if it is valid
+        if serializer.is_valid():
+            # Get the light
+            which = serializer.data['which']
+            try:
+                light = models.Light.objects.get(which=which)
+            except:
+                return JSONResponse({'which' : ['No light for which value %d' % which]}, status=status.HTTP_400_BAD_REQUEST)
+            # Check the permissions
+            if not light.user_authenticated(user):
+                return JSONResponse({'user' : ['User is not authenticated for light %d' % which]}, status=status.HTTP_400_BAD_REQUEST)
+            # Copy over the single task data
+            copied_data = copy_single_task_data(data)
+            # Now make the task and execute it
+            single_instructions = models.TaskInstructionsSingle(light=light, instructions=json.dumps(copied_data))
+            single_instructions.save()
+            task = models.Task(task_type=task_type_single, user=user, instructions=single_instructions)
+            task.execute()
+            return JSONResponse(task.as_json())
+        return JSONResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class Zones(APIView):
     """
