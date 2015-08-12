@@ -86,7 +86,7 @@ def create_task_instructions_single(**kwargs):
     light.save()
     defaults = {
         'light' : light,
-        'instructions' : create_task_instructions_single_json
+        'instructions' : create_task_instructions_single_json()
     }
     return TaskInstructionsSingle(**defaults)
 
@@ -98,6 +98,6 @@ def create_task(**kwargs):
     defaults = {
         'task_type' : task_type_single,
         'user' : user,
-        'instructions' : instructions,
+        'single_instructions' : instructions,
     }
     return Task(**defaults)

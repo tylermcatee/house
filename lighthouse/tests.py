@@ -7,6 +7,7 @@ from models import *
 import json, mock
 from dispatch import Dispatch
 from dispatch_types import *
+import time
 
 class LightModelTest(TestCase):
 
@@ -113,13 +114,21 @@ class TaskInstructionsSingleModelTest(TestCase):
 
     def test_create_task_instructions(self):
         self.assertEqual(0, len(TaskInstructionsSingle.objects.all()))
-        self.assertEqual(0, len(TaskInstructions.objects.all()))
         task_instructions_single = create_task_instructions_single()
         task_instructions_single.save()
         self.assertEqual(1, len(TaskInstructionsSingle.objects.all()))
-        self.assertEqual(1, len(TaskInstructions.objects.all()))
         new_instructions = TaskInstructionsSingle.objects.all()[0]
         self.assertEqual(task_instructions_single, new_instructions)
+
+    def test_task_instructions_json(self):
+        task_instructions_single = create_task_instructions_single()
+        task_instructions_single.save()
+        # Now create what we expect the json to look like
+        expected_json = {
+            'light' : task_instructions_single.light.as_json(),
+            'instructions' : json.loads(task_instructions_single.instructions)
+        }
+        self.assertEqual(task_instructions_single.as_json(), expected_json)
 
 class TaskModelTest(TestCase):
 
@@ -152,6 +161,43 @@ class TaskModelTest(TestCase):
         task.execute()
         self.assertNotEqual(None, task.executed)
         self.assertRaises(task.execute)
+
+    def test_task_json_not_executed(self):
+        task = create_task()
+        task.save()
+        task_instructions_single = task.single_instructions
+        # Now create what we expect the json to look like
+        single_expected_json = {
+            'light' : task_instructions_single.light.as_json(),
+            'instructions' : json.loads(task_instructions_single.instructions)
+        }
+        expected_json = {
+            'task_type' : task.task_type,
+            'user' : task.user.username,
+            'instructions' : single_expected_json,
+            'created' : int(time.mktime(task.created.timetuple())*1000)
+        }
+        self.assertEqual(task.as_json(), expected_json)
+
+    @mock.patch.object(Light, 'execute_instructions_single')
+    def test_task_json_executed(self, mock_execute):
+        task = create_task()
+        task.save()
+        task_instructions_single = task.single_instructions
+        task.execute()
+        # Now create what we expect the json to look like
+        single_expected_json = {
+            'light' : task_instructions_single.light.as_json(),
+            'instructions' : json.loads(task_instructions_single.instructions)
+        }
+        expected_json = {
+            'task_type' : task.task_type,
+            'user' : task.user.username,
+            'instructions' : single_expected_json,
+            'created' : int(time.mktime(task.created.timetuple())*1000),
+            'executed' : int(time.mktime(task.executed.timetuple())*1000)
+        }
+        self.assertEqual(task.as_json(), expected_json)
 
 class ZoneModelTest(TestCase):
 
