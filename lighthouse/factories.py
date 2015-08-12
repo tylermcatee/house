@@ -51,6 +51,14 @@ def create_alert_api_post(**kwargs):
     defaults.update(kwargs)
     return defaults
 
+def create_tasksingle_api_post(**kwargs):
+    defaults = {
+        'which' : test_which,
+        'on' : True
+    }
+    defaults.update(kwargs)
+    return defaults
+
 def mock_hue_response_for_light(light):
     if light.colorloop:
         effect = 'colorloop'

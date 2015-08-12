@@ -225,6 +225,60 @@ class TaskGETTest(TestCase):
         self.assertEqual(status.HTTP_200_OK, response.status_code)
         self.assertItemsEqual([task_json], response_json)
 
+class TaskSinglePOSTTest(TestCase):
+
+    def post_with_token(self, post):
+        c = Client()
+        return c.post(self.url, content_type = 'application/json', data = json.dumps(post), **{'HTTP_AUTHORIZATION' : 'Token %s' % str(self.token)})
+
+    def setUp(self):
+        self.url = '/lighthouse/tasksingle'
+        self.user = create_user()
+        self.user.save()
+        self.token = Token.objects.get(user=self.user)
+
+    def set_up_light(self, private=False, users=[]):
+        l = create_light()
+        l.zone.private = private
+        l.zone.save()
+        l.save()
+        for user in users:
+            l.zone.users.add(user)
+        l.save()
+
+    def test_no_user_raises_404(self):
+        c = Client()
+        post = {}
+        response = c.post(self.url, content_type = 'application/json', data = json.dumps(post))
+        # Without a proper user token, we should not be able to post
+        self.assertEqual(status.HTTP_404_NOT_FOUND, response.status_code)
+
+    def test_missing_keys_raises_errors(self):
+        response = self.post_with_token({})
+        # If we missed a key we should be receiving a 400 error
+        self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
+
+    """
+    Could add some tests here that test that the bri/sat/hue etc are passed in correctly and verified
+    """
+
+    def test_user_not_allowed_error(self):
+        self.set_up_light(private=True)
+        post = create_tasksingle_api_post()
+        response = self.post_with_token(post)
+        # We shouldn't be allowed to see this
+        self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
+
+    @mock.patch.object(Dispatch, 'update')
+    def test_user_allowed(self, mock_update):
+        self.set_up_light(private=True, users=[self.user])
+        post = create_tasksingle_api_post()
+        response = self.post_with_token(post)
+        # We should now be allowed to see this
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        self.assertTrue(mock_update.called)
+
+
 class ZoneModelTest(TestCase):
 
     def test_create_zone(self):
