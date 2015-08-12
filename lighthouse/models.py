@@ -135,13 +135,8 @@ class Light(models.Model):
                 self.colorloop = instructions['colorloop']
             self.save()
 
-class TaskInstructions(models.Model):
-    """
-    A base class for passing task instructions around.
-    """
-    pass
 
-class TaskInstructionsSingle(TaskInstructions):
+class TaskInstructionsSingle(models.Model):
     """
     A single state change, using just JSON formatted char field.
     """
@@ -168,7 +163,7 @@ class Task(models.Model):
     # will just re-schedule itself when it finishes
 
     # JSON formatted instructions dumped here in a char field
-    instructions = models.ForeignKey('TaskInstructions')
+    single_instructions = models.ForeignKey('TaskInstructionsSingle')
 
     def execute(self):
         """
@@ -179,7 +174,7 @@ class Task(models.Model):
 
         if self.task_type == task_type_single:
             # Execute the single instruction
-            self.instructions.light.execute_instructions_single(self.user, self.instructions.instructions)
+            self.single_instructions.light.execute_instructions_single(self.user, self.single_instructions.instructions)
         else:
             raise("Task type not supported")
 
@@ -194,13 +189,19 @@ class Task(models.Model):
         json = {
             'task_type' : self.task_type,
             'user' : self.user.username,
-            'instructions' : self.instructions.as_json(),
         }
+
+        if self.task_type == task_type_single:
+            json['instructions'] = self.single_instructions.as_json()
+        else:
+            raise("Task type not supported")
+
         created = int(time.mktime(self.created.timetuple())*1000)
         json['created'] = created
         if self.executed:
             executed = int(time.mktime(self.executed.timetuple())*1000)
             json['executed'] = executed
+            
         return json
 
 def default_zone():

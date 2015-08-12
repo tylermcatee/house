@@ -35,9 +35,7 @@ class JSONResponse(HttpResponse):
         super(JSONResponse, self).__init__(content, **kwargs)
 
 class Lights(APIView):
-    """
-    All things light.
-    """
+    
     def get(self, request):
         """
         Gets all of the lights and their states.
@@ -88,6 +86,21 @@ class Alert(APIView):
             return JSONResponse({}, status=status.HTTP_200_OK)
         return JSONResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+class Tasks(APIView):
+
+    def get(self, request):
+        """
+        Gets all of the tasks that have been executed.
+
+        Requires a valid user auth token to get the tasks.
+        """
+        if not request.user or not request.auth:
+            raise Http404
+        user = request.user
+
+        # Now return all the light states
+        return JSONResponse([task.as_json() for task in models.Task.objects.all()])
+
 class TaskSingle(APIView):
 
     def post(self, request):
@@ -117,7 +130,7 @@ class TaskSingle(APIView):
             # Now make the task and execute it
             single_instructions = models.TaskInstructionsSingle(light=light, instructions=json.dumps(copied_data))
             single_instructions.save()
-            task = models.Task(task_type=task_type_single, user=user, instructions=single_instructions)
+            task = models.Task(task_type=task_type_single, user=user, single_instructions=single_instructions)
             task.execute()
             return JSONResponse(task.as_json())
         return JSONResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
