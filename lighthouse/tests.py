@@ -66,84 +66,6 @@ class LightModelTest(TestCase):
         light_json['zone'] = zone.name
         self.assertEqual(light_json, light.as_json())
 
-# class LightPOSTTest(TestCase):
-
-#     def post_with_token(self, post):
-#         c = Client()
-#         return c.post(self.url, content_type = 'application/json', data = json.dumps(post), **{'HTTP_AUTHORIZATION' : 'Token %s' % str(self.token)})
-
-#     def setUp(self):
-#         self.url = '/lighthouse/lights'
-#         self.user = create_user()
-#         self.user.save()
-#         self.token = Token.objects.get(user=self.user)
-
-#     def set_up_light(self, private=False, users=[]):
-#         l = create_light()
-#         l.zone.private = private
-#         l.zone.save()
-#         l.save()
-#         for user in users:
-#             l.zone.users.add(user)
-#         l.save()
-
-#     def test_no_user_raises_404(self):
-#         c = Client()
-#         post = {}
-#         response = c.post(self.url, content_type = 'application/json', data = json.dumps(post))
-#         # Without a proper user token, we should not be able to post
-#         self.assertEqual(status.HTTP_404_NOT_FOUND, response.status_code)
-
-#     def test_missing_keys_raises_errors(self):
-#         post = create_light_api_post()
-#         keys = post.keys()
-#         for key in keys:
-#             mutable_post = post.copy()
-#             mutable_post.pop(key)
-#             response = self.post_with_token(mutable_post)
-#             # If we missed a key we should be receiving a 400 error
-#             self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
-
-#     def test_negative_keys_raises_errors(self):
-#         post = create_light_api_post()
-#         keys = post.keys()
-#         for key in ['hue', 'sat', 'bri', 'transitiontime']:
-#             mutable_post = post.copy()
-#             mutable_post[key] = -1
-#             response = self.post_with_token(mutable_post)
-#             # If we pass a negative value for these we should be receiving a 400 error
-#             self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
-
-#     def test_hue_range_error(self):
-#         post = create_light_api_post()
-#         post['hue'] = 65281
-#         response = self.post_with_token(post)
-#         # If we pass an out of range value for these we should be receiving a 400 error
-#         self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
-
-#     def test_no_light_error(self):
-#         post = create_light_api_post()
-#         response = self.post_with_token(post)
-#         # There should be no light
-#         self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
-
-#     def test_user_not_allowed_error(self):
-#         self.set_up_light(private=True)
-#         post = create_light_api_post()
-#         response = self.post_with_token(post)
-#         # We shouldn't be allowed to see this
-#         self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
-
-#     @mock.patch.object(Dispatch, 'dispatch_task_light')
-#     def test_user_allowed(self, mock_dispatch):
-#         self.set_up_light(private=True, users=[self.user])
-#         post = create_light_api_post()
-#         response = self.post_with_token(post)
-#         # We should now be allowed to see this
-#         self.assertEqual(status.HTTP_200_OK, response.status_code)
-#         self.assertTrue(mock_dispatch.called)
-        
-
 class LightGETTest(TestCase):
 
     def get_with_token(self):
@@ -255,70 +177,66 @@ class ZoneGETTest(TestCase):
         response = c.get(self.url)
         self.assertEqual(status.HTTP_404_NOT_FOUND, response.status_code)
 
-    # def test_zone_info_returned(self):
-    #     zone_json = {
-    #         'name' : 'test',
-    #     }
-    #     zone = create_zone(**zone_json)
-    #     zone.save()
-    #     light_json = {'which' : 0, 'name' : 'test'}
-    #     light = create_light_no_zone(**light_json)
-    #     light.zone = zone
-    #     light.save()
-    #     # Make it look like what we're expecting for as_json
-    #     zone_json['lights'] = [light_json]
-    #     response = self.get_with_token()
-    #     response_json = json.loads(response.content)
-    #     self.assertEqual(status.HTTP_200_OK, response.status_code)
-    #     self.assertItemsEqual([zone_json], response_json)
+    def test_zone_info_returned(self):
+        zone = create_zone()
+        zone.save()
+        light = create_light_no_zone()
+        light.zone = zone
+        light.save()
+        # Make it look like what we're expecting for as_json
+        zone_json = {'name' : zone.name, 'lights' : [light.as_json()]}
+        response = self.get_with_token()
+        response_json = json.loads(response.content)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        self.assertItemsEqual([zone_json], response_json)
 
-# class AlertPOSTTest(TestCase):
+class AlertPOSTTest(TestCase):
 
-#     def post_with_token(self, post):
-#         c = Client()
-#         return c.post(self.url, content_type = 'application/json', data = json.dumps(post), **{'HTTP_AUTHORIZATION' : 'Token %s' % str(self.token)})
+    def post_with_token(self, post):
+        c = Client()
+        return c.post(self.url, content_type = 'application/json', data = json.dumps(post), **{'HTTP_AUTHORIZATION' : 'Token %s' % str(self.token)})
 
-#     def setUp(self):
-#         self.url = '/lighthouse/alert'
-#         self.user = create_user()
-#         self.user.save()
-#         self.token = Token.objects.get(user=self.user)
+    def setUp(self):
+        self.url = '/lighthouse/alert'
+        self.user = create_user()
+        self.user.save()
+        self.token = Token.objects.get(user=self.user)
 
-#     def set_up_light(self, private=False, users=[]):
-#         l = create_light()
-#         l.zone.private = private
-#         l.zone.save()
-#         l.save()
-#         for user in users:
-#             l.zone.users.add(user)
-#         l.save()
+    def set_up_light(self, private=False, users=[]):
+        l = create_light()
+        l.zone.private = private
+        l.zone.save()
+        l.save()
+        for user in users:
+            l.zone.users.add(user)
+        l.save()
 
-#     def test_no_user_raises_404(self):
-#         c = Client()
-#         post = {}
-#         response = c.post(self.url, content_type = 'application/json', data = json.dumps(post))
-#         # Without a proper user token, we should not be able to post
-#         self.assertEqual(status.HTTP_404_NOT_FOUND, response.status_code)
+    def test_no_user_raises_404(self):
+        c = Client()
+        post = {}
+        response = c.post(self.url, content_type = 'application/json', data = json.dumps(post))
+        # Without a proper user token, we should not be able to post
+        self.assertEqual(status.HTTP_404_NOT_FOUND, response.status_code)
 
-#     def test_missing_keys_raises_errors(self):
-#         response = self.post_with_token({})
-#         # If we missed a key we should be receiving a 400 error
-#         self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
+    def test_missing_keys_raises_errors(self):
+        response = self.post_with_token({})
+        # If we missed a key we should be receiving a 400 error
+        self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
 
-#     def test_user_not_allowed_error(self):
-#         self.set_up_light(private=True)
-#         post = create_alert_api_post()
-#         response = self.post_with_token(post)
-#         # We shouldn't be allowed to see this
-#         self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
+    def test_user_not_allowed_error(self):
+        self.set_up_light(private=True)
+        post = create_alert_api_post()
+        response = self.post_with_token(post)
+        # We shouldn't be allowed to see this
+        self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
 
-#     @mock.patch.object(Dispatch, 'dispatch_task_alert')
-#     def test_user_allowed(self, mock_dispatch):
-#         self.set_up_light(private=True, users=[self.user])
-#         post = create_alert_api_post()
-#         response = self.post_with_token(post)
-#         # We should now be allowed to see this
-#         self.assertEqual(status.HTTP_200_OK, response.status_code)
-#         self.assertTrue(mock_dispatch.called)
+    @mock.patch.object(Dispatch, 'alert')
+    def test_user_allowed(self, mock_dispatch):
+        self.set_up_light(private=True, users=[self.user])
+        post = create_alert_api_post()
+        response = self.post_with_token(post)
+        # We should now be allowed to see this
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        self.assertTrue(mock_dispatch.called)
 
     

@@ -39,10 +39,9 @@ class Light(models.Model):
     def save(self, *args, **kw):
         if self.pk is not None:
             orig = Light.objects.get(pk=self.pk)
-
             # Name
             if orig.name != self.name:
-                Dispatch().update({
+                Dispatch(self.dispatch_type).update({
                         'which' : self.which,
                         'data' : {
                             'attr' : {
@@ -50,7 +49,6 @@ class Light(models.Model):
                             }
                         }
                     })
-
             # State
             resource = {
                 'which' : self.which,
@@ -58,7 +56,6 @@ class Light(models.Model):
                     'state' : {}
                 }
             }
-
             if self.on != orig.on:
                 resource['data']['state']['on'] = self.on
             if self.bri != orig.bri:
@@ -73,11 +70,9 @@ class Light(models.Model):
                 else:
                     colorloop_str = 'none'
                 resource['data']['state']['effect'] = colorloop_str
-
             # If we have resource to update, dispatch it
             if len(resource['data']['state'].keys()) > 0:
-                Dispatch().update(resource)
-
+                Dispatch(self.dispatch_type).update(resource)
         super(Light, self).save(*args, **kw)
 
     def as_json(self, user=None):
@@ -99,6 +94,14 @@ class Light(models.Model):
             'authenticated' : self.user_authenticated(user)
         }
 
+    def alert(self):
+        """
+        Calls the alert function for this light.
+        """
+        Dispatch(self.dispatch_type).alert(self.which)
+        self.on = True
+        self.save()
+
     def random(self, hue = True, sat = False, bri = False):
         """
         Sets the light to random values for hue, sat, and bri.
@@ -112,8 +115,6 @@ class Light(models.Model):
         if bri:
             self.bri = random.randint(0, 255)
         self.save()
-
-        
 
 def default_zone():
     """
@@ -155,17 +156,4 @@ class Zone(models.Model):
         for light in Light.objects.filter(zone=self):
             base_json['lights'].append(light.as_json())
         return base_json
-
-class Scene(models.Model):
-    class Meta:
-        ordering = ['name',]
-    def __unicode__(self):
-        return self.name
-    """
-    A scene represents a setting on a zone of lights.
-
-    Scene may optionally affect each light in the zone.
-    """
-    zone = models.ForeignKey('Zone')
-    name = models.CharField(max_length=100, unique=True)
     
