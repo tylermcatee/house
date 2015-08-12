@@ -199,6 +199,32 @@ class TaskModelTest(TestCase):
         }
         self.assertEqual(task.as_json(), expected_json)
 
+class TaskGETTest(TestCase):
+
+    def get_with_token(self):
+        c = Client()
+        return c.get(self.url, **{'HTTP_AUTHORIZATION' : 'Token %s' % str(self.token)})
+
+    def setUp(self):
+        self.url = '/lighthouse/tasks'
+        self.user = create_user()
+        self.user.save()
+        self.token = Token.objects.get(user=self.user)
+
+    def test_no_user_raises_404(self):
+        c = Client()
+        response = c.get(self.url)
+        self.assertEqual(status.HTTP_404_NOT_FOUND, response.status_code)
+
+    def test_task_info_returned(self):
+        task = create_task(user = self.user)
+        task.save()
+        task_json = task.as_json()
+        response = self.get_with_token()
+        response_json = json.loads(response.content)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        self.assertItemsEqual([task_json], response_json)
+
 class ZoneModelTest(TestCase):
 
     def test_create_zone(self):

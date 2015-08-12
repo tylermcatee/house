@@ -91,8 +91,11 @@ def create_task_instructions_single(**kwargs):
     return TaskInstructionsSingle(**defaults)
 
 def create_task(**kwargs):
-    user = create_user()
-    user.save()
+    if 'user' not in kwargs:
+        user = create_user()
+        user.save()
+    else:
+        user = kwargs['user']
     instructions = create_task_instructions_single()
     instructions.save()
     defaults = {
