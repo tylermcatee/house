@@ -109,6 +109,50 @@ class LightGETTest(TestCase):
         light = Light.objects.get(which=light.which)
         self.assertEqual(light.name, new_name)
 
+class TaskInstructionsSingleModelTest(TestCase):
+
+    def test_create_task_instructions(self):
+        self.assertEqual(0, len(TaskInstructionsSingle.objects.all()))
+        self.assertEqual(0, len(TaskInstructions.objects.all()))
+        task_instructions_single = create_task_instructions_single()
+        task_instructions_single.save()
+        self.assertEqual(1, len(TaskInstructionsSingle.objects.all()))
+        self.assertEqual(1, len(TaskInstructions.objects.all()))
+        new_instructions = TaskInstructionsSingle.objects.all()[0]
+        self.assertEqual(task_instructions_single, new_instructions)
+
+class TaskModelTest(TestCase):
+
+    def test_create_task(self):
+        self.assertEqual(0, len(Task.objects.all()))
+        task = create_task()
+        task.save()
+        self.assertEqual(1, len(Task.objects.all()))
+        new_task = Task.objects.all()[0]
+        self.assertEqual(task, new_task)
+
+    def test_nonexecuted_task(self):
+        task = create_task()
+        task.save()
+        self.assertEqual(None, task.executed)
+
+    @mock.patch.object(Light, 'execute_instructions_single')
+    def test_execute_task(self, mock_execute):
+        task = create_task()
+        task.save()
+        self.assertEqual(None, task.executed)
+        task.execute()
+        self.assertNotEqual(None, task.executed)
+
+    @mock.patch.object(Light, 'execute_instructions_single')
+    def test_execute_twice_raises(self, mock_execute):
+        task = create_task()
+        task.save()
+        self.assertEqual(None, task.executed)
+        task.execute()
+        self.assertNotEqual(None, task.executed)
+        self.assertRaises(task.execute)
+
 class ZoneModelTest(TestCase):
 
     def test_create_zone(self):

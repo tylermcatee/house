@@ -3,8 +3,10 @@ from django.conf import settings
 from dispatch import *
 import random
 from dispatch_types import *
+from task_types import *
+from django.utils import timezone
+import json
 
-# Create your models here.
 class Light(models.Model):
     """
     An integer corresponding to the integer associated
@@ -114,6 +116,69 @@ class Light(models.Model):
             self.sat = random.randint(0, 255)
         if bri:
             self.bri = random.randint(0, 255)
+        self.save()
+
+    def execute_instructions_single(self, user, instructions_single):
+        if self.user_authenticated(user):
+            instructions = json.loads(instructions_single)
+            if 'name' in instructions:
+                self.name = instructions['name']
+            if 'on' in instructions:
+                self.on = instructions['on']
+            if 'bri' in instructions:
+                self.bri = instructions['bri']
+            if 'hue' in instructions:
+                self.hue = instructions['hue']
+            if 'sat' in instructions:
+                self.sat = instructions['sat']
+            if 'colorloop' in instructions:
+                self.colorloop = instructions['colorloop']
+            self.save()
+
+class TaskInstructions(models.Model):
+    """
+    A base class for passing task instructions around.
+    """
+    pass
+
+class TaskInstructionsSingle(TaskInstructions):
+    """
+    A single state change, using just JSON formatted char field.
+    """
+    light = models.ForeignKey('Light')
+    instructions = models.CharField(max_length=2000)
+
+class Task(models.Model):
+    """
+    A Task represents a change on the database, or start of a running thread.
+    """
+    task_type = models.IntegerField()
+    user = models.ForeignKey(settings.AUTH_USER_MODEL)
+
+    # The difference between created and executed is for alarm based tasks
+    created = models.DateTimeField(auto_now_add=True)
+    executed = models.DateTimeField(null=True, blank=True)
+    # Eventually we will add "repeating" functionality to tasks, where a task
+    # will just re-schedule itself when it finishes
+
+    # JSON formatted instructions dumped here in a char field
+    instructions = models.ForeignKey('TaskInstructions')
+
+    def execute(self):
+        """
+        Executes the task.
+        """
+        if self.executed:
+            raise("Already executed this task.")
+
+        if self.task_type == task_type_single:
+            # Execute the single instruction
+            self.instructions.light.execute_instructions_single(self.user, self.instructions.instructions)
+        else:
+            raise("Task type not supported")
+
+        # Update the executed to be now
+        self.executed = timezone.now()
         self.save()
 
 def default_zone():

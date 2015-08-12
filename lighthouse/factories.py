@@ -1,6 +1,8 @@
 from models import *
 from django.contrib.auth.models import User
 from dispatch_types import *
+from task_types import *
+import json
 
 test_which = 1
 test_name = 'test'
@@ -68,3 +70,34 @@ def mock_hue_response_for_light(light):
             'sat' : light.sat,
         }
     }
+
+def create_task_instructions_single_json(**kwargs):
+    defaults = {
+        'on' : True,
+        'hue' : 0,
+        'sat' : 255,
+        'bri' : 255
+    }
+    defaults.update(kwargs)
+    return json.dumps(defaults)
+
+def create_task_instructions_single(**kwargs):
+    light = create_light()
+    light.save()
+    defaults = {
+        'light' : light,
+        'instructions' : create_task_instructions_single_json
+    }
+    return TaskInstructionsSingle(**defaults)
+
+def create_task(**kwargs):
+    user = create_user()
+    user.save()
+    instructions = create_task_instructions_single()
+    instructions.save()
+    defaults = {
+        'task_type' : task_type_single,
+        'user' : user,
+        'instructions' : instructions,
+    }
+    return Task(**defaults)
