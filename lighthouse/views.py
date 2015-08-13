@@ -152,7 +152,7 @@ class Zones(APIView):
         zones = models.Zone.objects.all()
         zone_json = []
         for zone in zones:
-            zone_json.append(zone.as_json())
+            zone_json.append(zone.as_json(user))
             
         return JSONResponse(zone_json, status=status.HTTP_200_OK)
 

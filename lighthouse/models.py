@@ -86,8 +86,7 @@ class Light(models.Model):
             'hue' : self.hue,
             'sat' : self.sat,
             'colorloop' : self.colorloop,
-            'reachable' : self.reachable,
-            'authenticated' : self.user_authenticated(user)
+            'reachable' : self.reachable
         }
 
     def alert(self):
@@ -239,11 +238,11 @@ class Zone(models.Model):
         # If private is false, everyone has access
         return True
 
-    def as_json(self):
+    def as_json(self, user):
         """
         Returns the zone as JSON including all of its lights.
         """
-        base_json = {'name' : self.name, 'lights' : []}
+        base_json = {'name' : self.name, 'lights' : [], 'authenticated' : self.user_authenticated(user)}
         for light in Light.objects.filter(zone=self):
             base_json['lights'].append(light.as_json())
         return base_json
