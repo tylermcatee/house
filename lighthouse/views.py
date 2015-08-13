@@ -149,6 +149,9 @@ class Zones(APIView):
             raise Http404
         user = request.user
 
+        # Synchronize all hue bulbs in the system
+        synchronize_hue()
+
         zones = models.Zone.objects.all()
         zone_json = []
         for zone in zones:
