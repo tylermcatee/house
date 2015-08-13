@@ -30,13 +30,7 @@ class Light(models.Model):
     reachable = models.BooleanField(default=False)
 
     def user_authenticated(self, user):
-        if self.zone.private:
-            if user:
-                return user in self.zone.users.all()
-            else:
-                return False
-        # If private is false, everyone has access
-        return True
+        return self.zone.user_authenticated(user)
 
     def save(self, *args, **kw):
         if self.pk is not None:
@@ -236,6 +230,15 @@ class Zone(models.Model):
     private = models.BooleanField(default=False)
     users = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True)
 
+    def user_authenticated(self, user):
+        if self.private:
+            if user:
+                return user in self.users.all()
+            else:
+                return False
+        # If private is false, everyone has access
+        return True
+
     def as_json(self):
         """
         Returns the zone as JSON including all of its lights.
@@ -244,4 +247,30 @@ class Zone(models.Model):
         for light in Light.objects.filter(zone=self):
             base_json['lights'].append(light.as_json())
         return base_json
+
+    def lights(self):
+        return Light.objects.filter(zone=self)
+
+    """
+    BETA release short cuts.
+    """
+
+    def off(self):
+        lights = self.lights()
+        for light in lights:
+            light.on = False
+            light.save()
+
+    def white(self):
+        lights = self.lights()
+        for light in lights:
+            light.on = True
+            light.sat = 0
+            light.save()
+
+    def random(self):
+        self.lights().update(on=True)
+        for light in self.lights():
+            light.sat = 255
+            light.random() # Saves
     

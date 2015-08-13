@@ -43,7 +43,7 @@ class LogIn(APIView):
             user = authenticate(username=username, password=password)
             if user:
                 token = Token.objects.get(user = user)
-                response = {'token' : str(token)}
+                response = {'token' : str(token), 'username' : username}
                 return JSONResponse(response, status=status.HTTP_201_CREATED)
             else:
                 error = {

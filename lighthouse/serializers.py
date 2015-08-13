@@ -5,3 +5,7 @@ class PostAlertSerializer(serializers.Serializer):
 
 class TaskSingleSerializer(serializers.Serializer):
     which = serializers.IntegerField()
+
+class BetaPostZoneSerializer(serializers.Serializer):
+    name = serializers.CharField(max_length=100)
+    action = serializers.CharField(max_length=100)
