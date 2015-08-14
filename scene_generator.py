@@ -151,8 +151,8 @@ for light_which in movie_mode_on:
 
 # Create my light / colorloop mode
 tasks = []
-white = [2, 3, 23, 7, 18, 19, 11]
-colorloop = [9, 6, 14, 13]
+white = [2, 3, 18, 19, 11]
+colorloop = [9, 6, 14, 13, 23, 7]
 white_instructions = {
     'on' : True,
     'hue' : 0,
