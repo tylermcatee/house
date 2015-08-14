@@ -214,6 +214,7 @@ class Scene(models.Model):
         for task in self.tasks.all():
             if task.light.zone == self.zone:
                 task.execute(user)
+                time.sleep(0.05)
 
     def as_json(self, user=None):
         """

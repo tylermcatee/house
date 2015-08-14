@@ -184,6 +184,7 @@ class Scenes(APIView):
         if not request.user or not request.auth:
             raise Http404
         user = request.user
+
         data = json.loads(request.body)
         serializer = PostSceneSerializer(data=data)
         # Check if it is valid
