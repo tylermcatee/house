@@ -228,3 +228,51 @@ scene.save()
 for task in tasks:  
     scene.tasks.add(task)
 scene.save()
+
+# Create my light / colorloop mode for chill
+tasks = []
+white = [1, 10]
+off = [8]
+colorloop = [15, 16, 17]
+white_instructions = {
+    'on' : True,
+    'hue' : 0,
+    'bri' : 100,
+    'sat' : 0,
+    'colorloop' : False,
+}
+colorloop_instructions = {
+    'on' : True,
+    'random' : True,
+    'colorloop' : True,
+    'sat' : 255,
+    'bri' : 100,
+}
+off_instructions = {
+    'on' : False,
+}
+for light_which in white:
+    light = Light.objects.get(which=light_which)
+    instructions = json.dumps(white_instructions)
+    task = Task(light=light, instructions=instructions)
+    task.save()
+    tasks.append(task)
+for light_which in colorloop:
+    light = Light.objects.get(which=light_which)
+    instructions = json.dumps(colorloop_instructions)
+    task = Task(light=light, instructions=instructions)
+    task.save()
+    tasks.append(task)
+for light_which in off:
+    light = Light.objects.get(which=light_which)
+    instructions = json.dumps(off_instructions)
+    task = Task(light=light, instructions=instructions)
+    task.save()
+    tasks.append(task)
+
+# Create my scene
+scene = Scene(zone=zone, name="Chill")
+scene.save()
+for task in tasks:  
+    scene.tasks.add(task)
+scene.save()

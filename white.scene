@@ -1,0 +1,16 @@
+zone 'Living Room'
+name 'White'
+
+light 'Floor Lamp 3'
+on yes
+bri 255
+sat 255
+colorloop no
+
+light 'Floor Lamp 2'
+random
+
+light 'Floor Lamp 1'
+random
+sat 255
+colorloop
