@@ -110,129 +110,14 @@ class LightGETTest(TestCase):
         light = Light.objects.get(which=light.which)
         self.assertEqual(light.name, new_name)
 
-class TaskInstructionsSingleModelTest(TestCase):
-
-    def test_create_task_instructions(self):
-        self.assertEqual(0, len(TaskInstructionsSingle.objects.all()))
-        task_instructions_single = create_task_instructions_single()
-        task_instructions_single.save()
-        self.assertEqual(1, len(TaskInstructionsSingle.objects.all()))
-        new_instructions = TaskInstructionsSingle.objects.all()[0]
-        self.assertEqual(task_instructions_single, new_instructions)
-
-    def test_task_instructions_json(self):
-        task_instructions_single = create_task_instructions_single()
-        task_instructions_single.save()
-        # Now create what we expect the json to look like
-        expected_json = {
-            'light' : task_instructions_single.light.as_json(),
-            'instructions' : json.loads(task_instructions_single.instructions)
-        }
-        self.assertEqual(task_instructions_single.as_json(), expected_json)
-
-class TaskModelTest(TestCase):
-
-    def test_create_task(self):
-        self.assertEqual(0, len(Task.objects.all()))
-        task = create_task()
-        task.save()
-        self.assertEqual(1, len(Task.objects.all()))
-        new_task = Task.objects.all()[0]
-        self.assertEqual(task, new_task)
-
-    def test_nonexecuted_task(self):
-        task = create_task()
-        task.save()
-        self.assertEqual(None, task.executed)
-
-    @mock.patch.object(Light, 'execute_instructions_single')
-    def test_execute_task(self, mock_execute):
-        task = create_task()
-        task.save()
-        self.assertEqual(None, task.executed)
-        task.execute()
-        self.assertNotEqual(None, task.executed)
-
-    @mock.patch.object(Light, 'execute_instructions_single')
-    def test_execute_twice_raises(self, mock_execute):
-        task = create_task()
-        task.save()
-        self.assertEqual(None, task.executed)
-        task.execute()
-        self.assertNotEqual(None, task.executed)
-        self.assertRaises(task.execute)
-
-    def test_task_json_not_executed(self):
-        task = create_task()
-        task.save()
-        task_instructions_single = task.single_instructions
-        # Now create what we expect the json to look like
-        single_expected_json = {
-            'light' : task_instructions_single.light.as_json(),
-            'instructions' : json.loads(task_instructions_single.instructions)
-        }
-        expected_json = {
-            'task_type' : task.task_type,
-            'user' : task.user.username,
-            'instructions' : single_expected_json,
-            'created' : int(time.mktime(task.created.timetuple())*1000)
-        }
-        self.assertEqual(task.as_json(), expected_json)
-
-    @mock.patch.object(Light, 'execute_instructions_single')
-    def test_task_json_executed(self, mock_execute):
-        task = create_task()
-        task.save()
-        task_instructions_single = task.single_instructions
-        task.execute()
-        # Now create what we expect the json to look like
-        single_expected_json = {
-            'light' : task_instructions_single.light.as_json(),
-            'instructions' : json.loads(task_instructions_single.instructions)
-        }
-        expected_json = {
-            'task_type' : task.task_type,
-            'user' : task.user.username,
-            'instructions' : single_expected_json,
-            'created' : int(time.mktime(task.created.timetuple())*1000),
-            'executed' : int(time.mktime(task.executed.timetuple())*1000)
-        }
-        self.assertEqual(task.as_json(), expected_json)
-
-class TaskGETTest(TestCase):
-
-    def get_with_token(self):
-        c = Client()
-        return c.get(self.url, **{'HTTP_AUTHORIZATION' : 'Token %s' % str(self.token)})
-
-    def setUp(self):
-        self.url = '/lighthouse/tasks'
-        self.user = create_user()
-        self.user.save()
-        self.token = Token.objects.get(user=self.user)
-
-    def test_no_user_raises_404(self):
-        c = Client()
-        response = c.get(self.url)
-        self.assertEqual(status.HTTP_404_NOT_FOUND, response.status_code)
-
-    def test_task_info_returned(self):
-        task = create_task(user = self.user)
-        task.save()
-        task_json = task.as_json()
-        response = self.get_with_token()
-        response_json = json.loads(response.content)
-        self.assertEqual(status.HTTP_200_OK, response.status_code)
-        self.assertItemsEqual([task_json], response_json)
-
-class TaskSinglePOSTTest(TestCase):
+class TaskPOSTTest(TestCase):
 
     def post_with_token(self, post):
         c = Client()
         return c.post(self.url, content_type = 'application/json', data = json.dumps(post), **{'HTTP_AUTHORIZATION' : 'Token %s' % str(self.token)})
 
     def setUp(self):
-        self.url = '/lighthouse/tasksingle'
+        self.url = '/lighthouse/tasks'
         self.user = create_user()
         self.user.save()
         self.token = Token.objects.get(user=self.user)

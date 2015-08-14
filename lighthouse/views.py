@@ -12,7 +12,7 @@ from rest_framework.renderers import JSONRenderer
 from rest_framework.parsers import JSONParser
 # Serializers
 from serializers import PostAlertSerializer
-from serializers import TaskSingleSerializer
+from serializers import TaskSerializer
 from serializers import BetaPostZoneSerializer
 # Models
 import models
@@ -21,8 +21,6 @@ from synchronization import *
 # Dispatch
 from dispatch import *
 from dispatch_types import *
-# Task
-from task_types import *
 # Other
 import json
 
@@ -99,10 +97,8 @@ class Tasks(APIView):
             raise Http404
         user = request.user
 
-        # Now return all the light states
+        # Now return all the tasks
         return JSONResponse([task.as_json() for task in models.Task.objects.all()])
-
-class TaskSingle(APIView):
 
     def post(self, request):
         """
@@ -114,7 +110,7 @@ class TaskSingle(APIView):
 
         # Serialize the data
         data = json.loads(request.body)
-        serializer = TaskSingleSerializer(data=data)
+        serializer = TaskSerializer(data=data)
         # Check if it is valid
         if serializer.is_valid():
             # Get the light
@@ -129,9 +125,9 @@ class TaskSingle(APIView):
             # Copy over the single task data
             copied_data = copy_single_task_data(data)
             # Now make the task and execute it
-            single_instructions = models.TaskInstructionsSingle(light=light, instructions=json.dumps(copied_data))
-            single_instructions.save()
-            task = models.Task(task_type=task_type_single, user=user, single_instructions=single_instructions)
+            instructions = models.TaskInstructions(light=light, instructions=json.dumps(copied_data))
+            instructions.save()
+            task = models.Task(user=user, instructions=instructions)
             task.execute()
             return JSONResponse(task.as_json())
         return JSONResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

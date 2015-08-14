@@ -27,8 +27,3 @@ class LightAdmin(admin.ModelAdmin):
         return super(LightAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
         
 admin.site.register(Light, LightAdmin)
-
-class TaskAdmin(admin.ModelAdmin):
-    list_display = ('task_type', 'user', 'created', 'executed')
-
-admin.site.register(Task, TaskAdmin)

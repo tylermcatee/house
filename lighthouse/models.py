@@ -3,7 +3,6 @@ from django.conf import settings
 from dispatch import *
 import random
 from dispatch_types import *
-from task_types import *
 from django.utils import timezone
 import json, time
 
@@ -111,7 +110,7 @@ class Light(models.Model):
             self.bri = random.randint(0, 255)
         self.save()
 
-    def execute_instructions_single(self, user, instructions_single):
+    def execute_instructions(self, user, instructions_single):
         if self.user_authenticated(user):
             instructions = json.loads(instructions_single)
             if 'name' in instructions:
@@ -129,7 +128,7 @@ class Light(models.Model):
             self.save()
 
 
-class TaskInstructionsSingle(models.Model):
+class TaskInstructions(models.Model):
     """
     A single state change, using just JSON formatted char field.
     """
@@ -144,58 +143,24 @@ class TaskInstructionsSingle(models.Model):
 
 class Task(models.Model):
     """
-    A Task represents a change on the database, or start of a running thread.
+    A Task represents a change on the database.
     """
-    task_type = models.IntegerField()
     user = models.ForeignKey(settings.AUTH_USER_MODEL)
-
-    # The difference between created and executed is for alarm based tasks
-    created = models.DateTimeField(auto_now_add=True)
-    executed = models.DateTimeField(null=True, blank=True)
-    # Eventually we will add "repeating" functionality to tasks, where a task
-    # will just re-schedule itself when it finishes
-
     # JSON formatted instructions dumped here in a char field
-    single_instructions = models.ForeignKey('TaskInstructionsSingle')
+    instructions = models.ForeignKey('TaskInstructions', null=True)
 
     def execute(self):
         """
         Executes the task.
         """
-        if self.executed:
-            raise("Already executed this task.")
-
-        if self.task_type == task_type_single:
-            # Execute the single instruction
-            self.single_instructions.light.execute_instructions_single(self.user, self.single_instructions.instructions)
-        else:
-            raise("Task type not supported")
-
-        # Update the executed to be now
-        self.executed = timezone.now()
-        self.save()
+        # Execute the single instruction
+        self.instructions.light.execute_instructions(self.user, self.instructions.instructions)
 
     def as_json(self):
-        """
-        Returns the JSON version of the task.
-        """
-        json = {
-            'task_type' : self.task_type,
+        return {
             'user' : self.user.username,
+            'instructions' : self.instructions.as_json()
         }
-
-        if self.task_type == task_type_single:
-            json['instructions'] = self.single_instructions.as_json()
-        else:
-            raise("Task type not supported")
-
-        created = int(time.mktime(self.created.timetuple())*1000)
-        json['created'] = created
-        if self.executed:
-            executed = int(time.mktime(self.executed.timetuple())*1000)
-            json['executed'] = executed
-            
-        return json
 
 def default_zone():
     """
@@ -238,7 +203,7 @@ class Zone(models.Model):
         # If private is false, everyone has access
         return True
 
-    def as_json(self, user):
+    def as_json(self, user=None):
         """
         Returns the zone as JSON including all of its lights.
         """
