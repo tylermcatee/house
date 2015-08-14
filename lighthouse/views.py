@@ -125,13 +125,11 @@ class Tasks(APIView):
             # Copy over the single task data
             copied_data = copy_single_task_data(data)
             # Now make the task and execute it
-            instructions = models.TaskInstructions(light=light, instructions=json.dumps(copied_data))
-            instructions.save()
-            task = models.Task(user=user, instructions=instructions)
+            task = models.Task(user=user, instructions=json.dumps(copied_data), light=light)
+            task.save()
             task.execute()
             return JSONResponse(task.as_json())
         return JSONResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 
 class Zones(APIView):
     """
@@ -154,38 +152,3 @@ class Zones(APIView):
             zone_json.append(zone.as_json(user))
             
         return JSONResponse(zone_json, status=status.HTTP_200_OK)
-
-    def post(self, request):
-        """
-        BETA post to a zone with one of the three actions.
-        """
-        if not request.user or not request.auth:
-            raise Http404
-        user = request.user
-
-        # Serialize the data
-        data = json.loads(request.body)
-        serializer = BetaPostZoneSerializer(data=data)
-        # Check if it is valid
-        if serializer.is_valid():
-            # Get the zone
-            name = serializer.data['name']
-            try:
-                zone = models.Zone.objects.get(name=name)
-            except:
-                return JSONResponse({'name' : ['No zone for name value %d' % name]}, status=status.HTTP_400_BAD_REQUEST)
-            # Check the permissions
-            if not zone.user_authenticated(user):
-                return JSONResponse({'user' : ['User is not authenticated for zone %d' % name]}, status=status.HTTP_400_BAD_REQUEST)
-
-            # Switch on the hard coded values
-            action = serializer.data['action']
-            if action == 'random':
-                zone.random()
-            elif action == 'off':
-                zone.off()
-            elif action == 'white':
-                zone.white()
-                
-            return JSONResponse({})
-        return JSONResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

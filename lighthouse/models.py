@@ -110,9 +110,9 @@ class Light(models.Model):
             self.bri = random.randint(0, 255)
         self.save()
 
-    def execute_instructions(self, user, instructions_single):
+    def execute_instructions(self, user, instructions_string):
         if self.user_authenticated(user):
-            instructions = json.loads(instructions_single)
+            instructions = json.loads(instructions_string)
             if 'name' in instructions:
                 self.name = instructions['name']
             if 'on' in instructions:
@@ -127,39 +127,26 @@ class Light(models.Model):
                 self.colorloop = instructions['colorloop']
             self.save()
 
-
-class TaskInstructions(models.Model):
-    """
-    A single state change, using just JSON formatted char field.
-    """
-    light = models.ForeignKey('Light')
-    instructions = models.CharField(max_length=2000)
-
-    def as_json(self):
-        return {
-            'light' : self.light.as_json(),
-            'instructions' : json.loads(self.instructions)
-        }
-
 class Task(models.Model):
     """
     A Task represents a change on the database.
     """
     user = models.ForeignKey(settings.AUTH_USER_MODEL)
-    # JSON formatted instructions dumped here in a char field
-    instructions = models.ForeignKey('TaskInstructions', null=True)
+    light = models.ForeignKey('Light')
+    instructions = models.CharField(max_length=2000)
 
     def execute(self):
         """
         Executes the task.
         """
         # Execute the single instruction
-        self.instructions.light.execute_instructions(self.user, self.instructions.instructions)
+        self.light.execute_instructions(self.user, self.instructions)
 
     def as_json(self):
         return {
             'user' : self.user.username,
-            'instructions' : self.instructions.as_json()
+            'light' : self.light.as_json(),
+            'instructions' : json.loads(self.instructions)
         }
 
 def default_zone():
@@ -215,26 +202,19 @@ class Zone(models.Model):
     def lights(self):
         return Light.objects.filter(zone=self)
 
-    """
-    BETA release short cuts.
-    """
+class Scene(models.Model):
 
-    def off(self):
-        lights = self.lights()
-        for light in lights:
-            light.on = False
-            light.save()
+    # Each scene MUST belong to a zone
+    zone = models.ForeignKey('Zone')
+    tasks = models.ManyToManyField(Task)
 
-    def white(self):
-        lights = self.lights()
-        for light in lights:
-            light.on = True
-            light.sat = 0
-            light.save()
-
-    def random(self):
-        self.lights().update(on=True)
-        for light in self.lights():
-            light.sat = 255
-            light.random() # Saves
+    def execute(self):
+        """
+        Executes the tasks on the zone.
+        """
+        for task in self.tasks.all():
+            if task.light.zone == self.zone:
+                task.execute()
+            else:
+                continue
     

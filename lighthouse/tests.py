@@ -59,11 +59,10 @@ class LightModelTest(TestCase):
             'hue' : 0,
             'sat' : 0,
             'colorloop' : 0,
-            'reachable' : 0
+            'reachable' : 0,
         }
         light = create_light(**light_json)
         light.save()
-        light_json['authenticated'] = True
         light_json['zone'] = zone.name
         self.assertEqual(light_json, light.as_json())
 
@@ -189,6 +188,7 @@ class ZoneModelTest(TestCase):
         zone.save()
         # Make it look like what we're expecting for as_json
         zone_json['lights'] = []
+        zone_json['authenticated'] = True
         new_zone_json = zone.as_json()
         self.assertEqual(zone_json, new_zone_json)
 
@@ -204,6 +204,7 @@ class ZoneModelTest(TestCase):
         light.save()
         # Make it look like what we're expecting for as_json
         zone_json['lights'] = [light.as_json()]
+        zone_json['authenticated'] = True
         new_zone_json = zone.as_json()
         self.assertEqual(zone_json, new_zone_json)
 
@@ -232,14 +233,15 @@ class ZoneGETTest(TestCase):
         response = c.get(self.url)
         self.assertEqual(status.HTTP_404_NOT_FOUND, response.status_code)
 
-    def test_zone_info_returned(self):
+    @mock.patch.object(Dispatch, 'get')
+    def test_zone_info_returned(self, mock_get):
         zone = create_zone()
         zone.save()
         light = create_light_no_zone()
         light.zone = zone
         light.save()
         # Make it look like what we're expecting for as_json
-        zone_json = {'name' : zone.name, 'lights' : [light.as_json()]}
+        zone_json = {'name' : zone.name, 'lights' : [light.as_json()], 'authenticated' : True}
         response = self.get_with_token()
         response_json = json.loads(response.content)
         self.assertEqual(status.HTTP_200_OK, response.status_code)
