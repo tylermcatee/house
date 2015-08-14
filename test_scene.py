@@ -3,11 +3,13 @@ from lighthouse.models import *
 from django.contrib.auth.models import User
 
 user = User.objects.all()[0]
+
 tv_left_up_left = Light.objects.get(which=23)
 tv_left_up_right = Light.objects.get(which=7)
+
 red = {
-    'on' : True,
-    'hue' : 1,
+    'on' : False,
+    'hue' : 0,
     'sat' : 255,
 }
 _red = json.dumps(red)
@@ -19,7 +21,7 @@ task_2.save()
 
 zone = Zone.objects.all()[0]
 
-scene = Scene(zone=zone)
+scene = Scene(zone=zone, name='Reds')
 scene.save()
 scene.tasks.add(task_1)
 scene.tasks.add(task_2)

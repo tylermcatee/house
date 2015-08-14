@@ -13,7 +13,7 @@ from rest_framework.parsers import JSONParser
 # Serializers
 from serializers import PostAlertSerializer
 from serializers import TaskSerializer
-from serializers import BetaPostZoneSerializer
+from serializers import PostSceneSerializer
 # Models
 import models
 # Synchronization
@@ -152,3 +152,52 @@ class Zones(APIView):
             zone_json.append(zone.as_json(user))
             
         return JSONResponse(zone_json, status=status.HTTP_200_OK)
+
+class Scenes(APIView):
+    """
+    Executes a set of tasks on a zone.
+    """
+    def get(self, request):
+        """
+        Returns all the scenes, organized by zone.
+        """
+        if not request.user or not request.auth:
+            raise Http404
+        user = request.user
+
+        zones = models.Zone.objects.all()
+        scene_json = []
+        for zone in zones:
+            zone_dict = {
+                'name' : zone.name,
+                'authenticated' : zone.user_authenticated(user),
+                'scenes' : [scene.as_json() for scene in zone.scenes()]
+            }
+            scene_json.append(zone_dict)
+
+        return JSONResponse(scene_json, status=status.HTTP_200_OK)
+
+    def post(self, request):
+        """
+        Executes a scene.
+        """
+        if not request.user or not request.auth:
+            raise Http404
+        user = request.user
+        data = json.loads(request.body)
+        serializer = PostSceneSerializer(data=data)
+        # Check if it is valid
+        if serializer.is_valid():
+            # Get the scene
+            id = serializer.data['id']
+            try:
+                scene = models.Scene.objects.get(id=id)
+            except:
+                return JSONResponse({'which' : ['No scene for id value %d' % id]}, status=status.HTTP_400_BAD_REQUEST)
+            # Check the permissions
+            if not scene.zone.user_authenticated(user):
+                return JSONResponse({'user' : ['User is not authenticated for scene %d' % id]}, status=status.HTTP_400_BAD_REQUEST)
+            # Execute the scene
+            scene.execute()
+            return JSONResponse(scene.as_json())
+        return JSONResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

@@ -6,4 +6,5 @@ urlpatterns = patterns('',
   url(r'^tasks/?$', views.Tasks.as_view()),
   url(r'^zones/?$', views.Zones.as_view()),
   url(r'^alert/?$', views.Alert.as_view()),
+  url(r'^scenes/?$', views.Scenes.as_view()),
 )

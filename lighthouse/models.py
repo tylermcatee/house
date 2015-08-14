@@ -127,28 +127,6 @@ class Light(models.Model):
                 self.colorloop = instructions['colorloop']
             self.save()
 
-class Task(models.Model):
-    """
-    A Task represents a change on the database.
-    """
-    user = models.ForeignKey(settings.AUTH_USER_MODEL)
-    light = models.ForeignKey('Light')
-    instructions = models.CharField(max_length=2000)
-
-    def execute(self):
-        """
-        Executes the task.
-        """
-        # Execute the single instruction
-        self.light.execute_instructions(self.user, self.instructions)
-
-    def as_json(self):
-        return {
-            'user' : self.user.username,
-            'light' : self.light.as_json(),
-            'instructions' : json.loads(self.instructions)
-        }
-
 def default_zone():
     """
     Gets a default zone that lights get put into when created.
@@ -202,11 +180,37 @@ class Zone(models.Model):
     def lights(self):
         return Light.objects.filter(zone=self)
 
+    def scenes(self):
+        return Scene.objects.filter(zone=self)
+
+class Task(models.Model):
+    """
+    A Task represents a change on the database.
+    """
+    user = models.ForeignKey(settings.AUTH_USER_MODEL)
+    light = models.ForeignKey('Light')
+    instructions = models.CharField(max_length=2000)
+
+    def execute(self):
+        """
+        Executes the task.
+        """
+        # Execute the single instruction
+        self.light.execute_instructions(self.user, self.instructions)
+
+    def as_json(self):
+        return {
+            'user' : self.user.username,
+            'light' : self.light.as_json(),
+            'instructions' : json.loads(self.instructions)
+        }
+
 class Scene(models.Model):
 
     # Each scene MUST belong to a zone
     zone = models.ForeignKey('Zone')
     tasks = models.ManyToManyField(Task)
+    name = models.CharField(max_length=100)
 
     def execute(self):
         """
@@ -217,4 +221,14 @@ class Scene(models.Model):
                 task.execute()
             else:
                 continue
+
+    def as_json(self, user=None):
+        """
+        Returns the scene as JSON.
+        """
+        return {
+            'id' : self.id,
+            'name' : self.name,
+            'tasks' : [task.as_json() for task in self.tasks.all()]
+        }
     
