@@ -149,6 +149,13 @@ for light_which in movie_mode_on:
     task.save()
     tasks.append(task)
 
+# Create the movie mode scene
+scene = Scene(zone=zone, name='Movie Mode')
+scene.save()
+for task in tasks:  
+    scene.tasks.add(task)
+scene.save()
+
 # Create my light / colorloop mode
 tasks = []
 white = [2, 3, 18, 19, 11]
@@ -182,13 +189,6 @@ for light_which in colorloop:
 
 # Create my scene
 scene = Scene(zone=zone, name="Tyler's")
-scene.save()
-for task in tasks:  
-    scene.tasks.add(task)
-scene.save()
-
-# Create the movie mode scene
-scene = Scene(zone=zone, name='Movie Mode')
 scene.save()
 for task in tasks:  
     scene.tasks.add(task)
