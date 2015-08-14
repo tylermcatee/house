@@ -143,7 +143,7 @@ for light_which in movie_mode_on:
     if _instructions['colorloop']:
         _instructions['bri'] = 255
     if light_which == 3:
-        _instructions['bri'] = 100
+        _instructions['bri'] = 0
     instructions = json.dumps(_instructions)
     task = Task(light=light, instructions=instructions)
     task.save()
@@ -156,3 +156,37 @@ for task in tasks:
     scene.tasks.add(task)
 scene.save()
 
+# Create the sleep mode for my room
+off_blue = [15, 17, 8, 16]
+on_blue = [10, 1]
+zone = Zone.objects.get(name="Tylers Room")
+tasks = []
+# Create the off tasks
+off_instructions = {
+    'on' : False
+}
+for light_which in off_blue:
+    light = Light.objects.get(which=light_which)
+    instructions = json.dumps(off_instructions)
+    task = Task(light=light, instructions=instructions)
+    task.save()
+    tasks.append(task)
+on_instructions = {
+    'on' : True,
+    'bri' : 129,
+    'hue' : 44656,
+    'sat' : 252,
+}
+for light_which in on_blue:
+    light = Light.objects.get(which=light_which)
+    instructions = json.dumps(on_instructions)
+    task = Task(light=light, instructions=instructions)
+    task.save()
+    tasks.append(task)
+
+# Create the sleep scene
+scene = Scene(zone=zone, name='Sleep')
+scene.save()
+for task in tasks:  
+    scene.tasks.add(task)
+scene.save()
