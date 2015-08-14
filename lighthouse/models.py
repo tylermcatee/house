@@ -96,23 +96,20 @@ class Light(models.Model):
         self.on = True
         self.save()
 
-    def random(self, hue = True, sat = False, bri = False):
+    def random(self):
         """
         Sets the light to random values for hue, sat, and bri.
         """
-        if not self.hue and not self.sat and not self.bri:
-            return # Do nothing
-        if hue:
-            self.hue = random.randint(0, 65280)
-        if sat:
-            self.sat = random.randint(0, 255)
-        if bri:
-            self.bri = random.randint(0, 255)
+        self.hue = random.randint(0, 65280)
+        self.sat = 255
+        self.bri = 255
         self.save()
 
     def execute_instructions(self, user, instructions_string):
         if self.user_authenticated(user):
             instructions = json.loads(instructions_string)
+            if 'random' in instructions:
+                self.random()
             if 'name' in instructions:
                 self.name = instructions['name']
             if 'on' in instructions:
@@ -187,20 +184,18 @@ class Task(models.Model):
     """
     A Task represents a change on the database.
     """
-    user = models.ForeignKey(settings.AUTH_USER_MODEL)
     light = models.ForeignKey('Light')
     instructions = models.CharField(max_length=2000)
 
-    def execute(self):
+    def execute(self, user):
         """
         Executes the task.
         """
         # Execute the single instruction
-        self.light.execute_instructions(self.user, self.instructions)
+        self.light.execute_instructions(user, self.instructions)
 
     def as_json(self):
         return {
-            'user' : self.user.username,
             'light' : self.light.as_json(),
             'instructions' : json.loads(self.instructions)
         }
@@ -212,15 +207,13 @@ class Scene(models.Model):
     tasks = models.ManyToManyField(Task)
     name = models.CharField(max_length=100)
 
-    def execute(self):
+    def execute(self, user):
         """
         Executes the tasks on the zone.
         """
         for task in self.tasks.all():
             if task.light.zone == self.zone:
-                task.execute()
-            else:
-                continue
+                task.execute(user)
 
     def as_json(self, user=None):
         """

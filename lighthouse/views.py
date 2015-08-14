@@ -198,6 +198,6 @@ class Scenes(APIView):
             if not scene.zone.user_authenticated(user):
                 return JSONResponse({'user' : ['User is not authenticated for scene %d' % id]}, status=status.HTTP_400_BAD_REQUEST)
             # Execute the scene
-            scene.execute()
+            scene.execute(user)
             return JSONResponse(scene.as_json())
         return JSONResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
