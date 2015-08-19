@@ -88,7 +88,7 @@ colorloop = {
 create_global_scene(colorloop, 'Colorloop')
 
 # Create the living room movie mode scene
-movie_mode_off = [2,18,19,23,24,25]
+movie_mode_off = [2,18,19,23,24,25, 30]
 zone = Zone.objects.get(name='Living Room')
 tasks = []
 # Create the off tasks
@@ -150,7 +150,7 @@ scene.save()
 # Create my light / colorloop mode
 tasks = []
 white = [2, 18, 19, 11, 26]
-colorloop = [9, 6, 14, 13, 23, 7, 24, 25]
+colorloop = [9, 6, 14, 13, 23, 7, 24, 25, 30]
 white_instructions = {
     'on' : True,
     'hue' : 0,
