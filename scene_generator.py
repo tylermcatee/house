@@ -54,15 +54,6 @@ warm = {
     'colorloop' : False,
 }
 create_global_scene(warm, 'Warm')
-# Create the 'warmer' scenes
-warmer = {
-    'on' : True,
-    'hue' : 3000,
-    'sat' : 200,
-    'bri' : 255,
-    'colorloop' : False,
-}
-create_global_scene(warmer, 'Warmer')
 # Create the 'Red' scenes
 red = {
     'on' : True,
@@ -111,7 +102,7 @@ for light_which in movie_mode_off:
     task.save()
     tasks.append(task)
 
-movie_mode_on = [6,7,9,11,13,14]
+movie_mode_on = [6,7,9,11,13,14,26]
 on_instructions = {
     'on' : True,
     'bri' : 50,
@@ -124,6 +115,7 @@ color_dict = {
     11 : 64034,
     13: 47939,
     14 : 3105,
+    26 : 4500,
 }
 colorloop_dict = {
     6 : True,
@@ -132,6 +124,7 @@ colorloop_dict = {
     11 : False,
     13: True,
     14 : True,
+    26: False,
 }
 for light_which in movie_mode_on:
     light = Light.objects.get(which=light_which)
@@ -156,7 +149,7 @@ scene.save()
 
 # Create my light / colorloop mode
 tasks = []
-white = [2, 18, 19, 11]
+white = [2, 18, 19, 11, 26]
 colorloop = [9, 6, 14, 13, 23, 7, 24, 25]
 white_instructions = {
     'on' : True,
@@ -192,28 +185,11 @@ for task in tasks:
     scene.tasks.add(task)
 scene.save()
 
-# Create my light / colorloop mode for chill
+# Create Tyler's for room
+zone = Zone.objects.get(name='Tylers Room')
+white = [29, 1, 17, 15, 16]
+colorloop = [28, 10, 8, 3]
 tasks = []
-white = [1, 10]
-off = [8]
-colorloop = [15, 16, 17, 3]
-white_instructions = {
-    'on' : True,
-    'hue' : 0,
-    'bri' : 100,
-    'sat' : 0,
-    'colorloop' : False,
-}
-colorloop_instructions = {
-    'on' : True,
-    'random' : True,
-    'colorloop' : True,
-    'sat' : 255,
-    'bri' : 100,
-}
-off_instructions = {
-    'on' : False,
-}
 for light_which in white:
     light = Light.objects.get(which=light_which)
     instructions = json.dumps(white_instructions)
@@ -226,15 +202,9 @@ for light_which in colorloop:
     task = Task(light=light, instructions=instructions)
     task.save()
     tasks.append(task)
-for light_which in off:
-    light = Light.objects.get(which=light_which)
-    instructions = json.dumps(off_instructions)
-    task = Task(light=light, instructions=instructions)
-    task.save()
-    tasks.append(task)
 
 # Create my scene
-scene = Scene(zone=zone, name="Chill")
+scene = Scene(zone=zone, name="Tyler's")
 scene.save()
 for task in tasks:  
     scene.tasks.add(task)
