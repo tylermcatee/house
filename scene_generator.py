@@ -41,7 +41,6 @@ create_global_scene(off, 'Off')
 white = {
     'on' : True,
     'sat' : 0,
-    'bri' : 255,
     'colorloop' : False,
 }
 create_global_scene(white, 'White')
@@ -50,7 +49,6 @@ warm = {
     'on' : True,
     'hue' : 3000,
     'sat' : 100,
-    'bri' : 255,
     'colorloop' : False,
 }
 create_global_scene(warm, 'Warm')
@@ -59,7 +57,6 @@ red = {
     'on' : True,
     'hue' : 0,
     'sat' : 255,
-    'bri' : 255,
     'colorloop' : False,
 }
 create_global_scene(red, 'Red')
@@ -68,7 +65,6 @@ random = {
     'on' : True,
     'random' : True,
     'sat' : 255,
-    'bri' : 255,
     'colorloop' : False,
 }
 create_global_scene(random, 'Saturated Random')
@@ -77,7 +73,6 @@ light_random = {
     'on' : True,
     'random' : True,
     'sat' : 100,
-    'bri' : 255,
     'colorloop' : False,
 }
 create_global_scene(light_random, 'Light Random')
@@ -96,6 +91,11 @@ percent_50 = {
     'bri' : 126
 }
 create_global_scene(percent_50, '50%')
+# Create the '25%' scene
+percent_25 = {
+    'bri' : 64
+}
+create_global_scene(percent_25, '25%')
 # Create the '10%' scene
 percent_10 = {
     'bri' : 25
