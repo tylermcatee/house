@@ -86,6 +86,22 @@ colorloop = {
     'colorloop' : True
 }
 create_global_scene(colorloop, 'Colorloop')
+# Create the '100%' scene
+percent_100 = {
+    'bri' : 255,
+}
+create_global_scene(percent_100, '100%')
+# Create the '50%' scene
+percent_50 = {
+    'bri' : 126
+}
+create_global_scene(percent_50, '50%')
+# Create the '10%' scene
+percent_10 = {
+    'bri' : 25
+}
+create_global_scene(percent_10, '10%')
+# Create the '10%' scene
 
 # Create the living room movie mode scene
 movie_mode_off = [2,18,19,23,24,25, 30]
@@ -209,3 +225,10 @@ scene.save()
 for task in tasks:  
     scene.tasks.add(task)
 scene.save()
+
+def create_task(instructions, which):
+    light = Light.objects.get(which=which)
+    instructions = json.dumps(instructions)
+    task = Task(light=light, instructions=instructions)
+    task.save()
+    return task
