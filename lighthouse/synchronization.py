@@ -47,6 +47,14 @@ def synchronize_hue():
     for resource in resources:
         update_hue(resource)
 
+def update_light(light, state, key):
+    if key in state:
+        value = state[key]
+        current_value = getattr(light, key)
+        if value != current_value:
+            setattr(light, key, value)
+    return light
+
 def update_hue(resource):
     """
     Updates our backing store with the light information from
@@ -63,29 +71,21 @@ def update_hue(resource):
     name = resource['name']
     if light.name != name:
         light.name = name
+
+    # Start variables
     state = resource['state']
-    on = state['on']
-    if light.on != on:
-        light.on = on
-    bri = state['bri']
-    if light.bri != bri:
-        light.bri = bri
-    hue = state['hue']
-    if light.hue != hue:
-        light.hue = hue
-    sat = state['sat']
-    if light.sat != sat:
-        light.sat = sat
-    colorloop = state['effect']
-    if colorloop == 'colorloop':
-        colorloop = True
-    else:
-        colorloop = False
-    if light.colorloop != colorloop:
-        light.colorloop = colorloop
-    reachable = state['reachable']
-    if light.reachable != reachable:
-        light.reachable = reachable
+    state_variables = ['on', 'bri', 'hue', 'sat', 'reachable']
+    for state_variable in state_variables:
+        light = update_light(light, state, state_variable)
+    # Special case for colorloop
+    if 'effect' in state:
+        colorloop = state['effect']
+        if colorloop == 'colorloop':
+            colorloop = True
+        else:
+            colorloop = False
+        if light.colorloop != colorloop:
+            light.colorloop = colorloop
 
     light.dispatch_type = dispatch_type_hue
     light.save()
