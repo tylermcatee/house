@@ -31,12 +31,30 @@ def create_global_scene(instructions, name):
             scene.tasks.add(task)
         scene.save()
 
+def create_nates_scene(instructions, name):
+    _instructions = json.dumps(instructions)
+    # Give this scene to nates room
+    zone = Zone.objects.get(name='Nates Room')
+    # Create the tasks
+    tasks = []
+    for light in zone.lights():
+        task = Task(light=light, instructions=_instructions)
+        task.save()
+        tasks.append(task)
+    # Create the scene
+    scene = Scene(zone=zone, name=name)
+    scene.save()
+    for task in tasks:  
+        scene.tasks.add(task)
+    scene.save()
+
 # Create the 'off' scenes
 off = {
     'on' : False,
     'colorloop' : False,
 }
 create_global_scene(off, 'Off')
+create_nates_scene(off, 'Off')
 # Create the 'white' scenes
 white = {
     'on' : True,
@@ -44,6 +62,10 @@ white = {
     'colorloop' : False,
 }
 create_global_scene(white, 'White')
+on = {
+    'on' : True,
+}
+create_nates_scene(on, 'On')
 # Create the 'warm' scenes
 warm = {
     'on' : True,
@@ -86,21 +108,25 @@ percent_100 = {
     'bri' : 255,
 }
 create_global_scene(percent_100, '100%')
+create_nates_scene(percent_100, '100%')
 # Create the '50%' scene
 percent_50 = {
     'bri' : 126
 }
 create_global_scene(percent_50, '50%')
+create_nates_scene(percent_50, '50%')
 # Create the '25%' scene
 percent_25 = {
     'bri' : 64
 }
 create_global_scene(percent_25, '25%')
+create_nates_scene(percent_25, '25%')
 # Create the '10%' scene
 percent_10 = {
     'bri' : 25
 }
 create_global_scene(percent_10, '10%')
+create_nates_scene(percent_10, '10%')
 # Create the '10%' scene
 
 # Create the living room movie mode scene
