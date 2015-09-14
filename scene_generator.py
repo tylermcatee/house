@@ -18,6 +18,8 @@ def create_global_scene(instructions, name):
 
     # Give this scene to every zone
     for zone in Zone.objects.all():
+	if zone.name == 'Nates Room':
+		continue
         # Create the tasks
         tasks = []
         for light in zone.lights():
@@ -130,7 +132,7 @@ create_nates_scene(percent_10, '10%')
 # Create the '10%' scene
 
 # Create the living room movie mode scene
-movie_mode_off = [2,18,19,23,24,25, 30]
+movie_mode_off = [1, 2, 7, 23, 24, 25, 26, 30]
 zone = Zone.objects.get(name='Living Room')
 tasks = []
 # Create the off tasks
@@ -144,7 +146,8 @@ for light_which in movie_mode_off:
     task.save()
     tasks.append(task)
 
-movie_mode_on = [6,7,9,11,13,14,26]
+
+movie_mode_on = [6, 9, 11, 13, 14, 18, 19, 28]
 on_instructions = {
     'on' : True,
     'bri' : 50,
@@ -152,12 +155,13 @@ on_instructions = {
 }
 color_dict = {
     6 : 28302,
-    7 : 3545,
+    18 : 3545,
     9 : 44287,
     11 : 64034,
     13: 47939,
     14 : 3105,
-    26 : 4500,
+    19 : 4500,
+    28: 28302,
 }
 colorloop_dict = {
     6 : True,
@@ -167,6 +171,9 @@ colorloop_dict = {
     13: True,
     14 : True,
     26: False,
+    28: False,
+    18: False,
+    19 : False,
 }
 for light_which in movie_mode_on:
     light = Light.objects.get(which=light_which)
@@ -191,8 +198,8 @@ scene.save()
 
 # Create my light / colorloop mode
 tasks = []
-white = [2, 18, 19, 11, 26]
-colorloop = [9, 6, 14, 13, 23, 7, 24, 25, 30]
+white = [2, 9, 11, 18, 19, 23, 26, ]
+colorloop = [1, 6, 7, 13, 14, 24, 25, 28, 30, ]
 white_instructions = {
     'on' : True,
     'hue' : 0,
@@ -226,35 +233,3 @@ scene.save()
 for task in tasks:  
     scene.tasks.add(task)
 scene.save()
-
-# Create Tyler's for room
-zone = Zone.objects.get(name='Tylers Room')
-white = [29, 1, 17, 15, 16]
-colorloop = [28, 10, 8, 3]
-tasks = []
-for light_which in white:
-    light = Light.objects.get(which=light_which)
-    instructions = json.dumps(white_instructions)
-    task = Task(light=light, instructions=instructions)
-    task.save()
-    tasks.append(task)
-for light_which in colorloop:
-    light = Light.objects.get(which=light_which)
-    instructions = json.dumps(colorloop_instructions)
-    task = Task(light=light, instructions=instructions)
-    task.save()
-    tasks.append(task)
-
-# Create my scene
-scene = Scene(zone=zone, name="Tyler's")
-scene.save()
-for task in tasks:  
-    scene.tasks.add(task)
-scene.save()
-
-def create_task(instructions, which):
-    light = Light.objects.get(which=which)
-    instructions = json.dumps(instructions)
-    task = Task(light=light, instructions=instructions)
-    task.save()
-    return task
